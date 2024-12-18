@@ -6,7 +6,7 @@ if os.path.abspath('..') not in sys.path:
     sys.path.insert(0, os.path.abspath('..'))
 import argparse
 
-from DataLoader.dataloader_OpenKBP_DCNN import get_loader
+from dataloader_OpenKBP_DCNN import get_loader
 from NetworkTrainer.network_trainer import NetworkTrainer
 from model import Model
 from online_evaluation import online_evaluation
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     #  Start training
     trainer = NetworkTrainer()
     trainer.setting.project_name = 'DCNN'
-    trainer.setting.output_dir = '../../Output/DCNN'
+    trainer.setting.output_dir = '../Output/DCNN'
     list_GPU_ids = args.list_GPU_ids
 
     trainer.setting.network = Model(in_ch=4, out_ch=1,
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     trainer.setting.train_loader, trainer.setting.val_loader = get_loader(
         train_bs=args.batch_size,
         val_bs=1,
-        train_num_samples_per_epoch=args.batch_size * 5000,  # 5000 iterations per epoch
+        train_num_samples_per_epoch=args.batch_size * 500,
         val_num_samples_per_epoch=1,
         num_works=8
     )
@@ -62,8 +62,7 @@ if __name__ == '__main__':
                              }
                              )
 
-    if not os.path.exists(trainer.setting.output_dir):
-        os.mkdir(trainer.setting.output_dir)
+    os.makedirs(trainer.setting.output_dir, exist_ok=True)
     trainer.set_GPU_device(list_GPU_ids)
     trainer.run()
 

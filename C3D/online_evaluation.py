@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-from DataLoader.dataloader_OpenKBP_C3D import val_transform, read_data, pre_processing
+from dataloader_OpenKBP_C3D import val_transform, read_data, pre_processing
 from Evaluate.evaluate_openKBP import *
 from model import *
 

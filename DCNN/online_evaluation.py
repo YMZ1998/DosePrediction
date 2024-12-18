@@ -1,11 +1,11 @@
 # -*- encoding: utf-8 -*-
-from DataLoader.dataloader_OpenKBP_DCNN import val_transform, read_data, pre_processing
+from dataloader_OpenKBP_DCNN import val_transform, read_data, pre_processing
 from Evaluate.evaluate_openKBP import *
 from model import *
 
 
 def online_evaluation(trainer):
-    list_patient_dirs = ['../../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 241)]
+    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 241)]
 
     list_Dose_score = []
 
@@ -43,14 +43,8 @@ def online_evaluation(trainer):
                                                possible_dose_mask)
             list_Dose_score.append(Dose_score)
 
-            try:
-                trainer.print_log_to_file('========> ' + patient_name + ':  ' + str(Dose_score), 'a')
-            except:
-                pass
+            trainer.print_log_to_file('==> ' + patient_name + ':  ' + str(Dose_score) + '\n', 'a')
 
-    try:
-        trainer.print_log_to_file('===============================================> mean Dose score: '
-                                  + str(np.mean(list_Dose_score)), 'a')
-    except:
-        pass
+    trainer.print_log_to_file('==> mean Dose score: ' + str(np.mean(list_Dose_score))+'\n', 'a')
+
     return - np.mean(list_Dose_score)

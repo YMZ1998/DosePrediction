@@ -5,6 +5,7 @@ import numpy as np
 import os
 import skimage.morphology
 from scipy.ndimage import distance_transform_edt
+from tqdm import tqdm
 
 
 # This function is adapted from OpenKBP official codes, https://github.com/ababier/open-kbp
@@ -62,8 +63,8 @@ def save_slices(image, save_prefix,  list_slice_indexes, spacing):
 
 
 if __name__ == '__main__':
-    source_dir = '../../Data/provided-data'
-    save_dir = '../../Data/OpenKBP_DCNN'
+    source_dir = '../Data/provided-data'
+    save_dir = '../Data/OpenKBP_DCNN'
 
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
@@ -73,7 +74,7 @@ if __name__ == '__main__':
         for patient_id in os.listdir(source_dir + '/' + sub_dir):
             list_patient_dirs.append(source_dir + '/' + sub_dir + '/' + patient_id)
 
-    for patient_dir in list_patient_dirs:
+    for patient_dir in tqdm(list_patient_dirs, desc="Processing cases"):
         # Make dir for each patient
         patient_id = patient_dir.split('/')[-1]
         save_patient_path = save_dir + '/' + patient_id
@@ -162,4 +163,4 @@ if __name__ == '__main__':
                     list_slice_indexes=list_slice_indexes,
                     spacing=spacing)
 
-        print(patient_id + ' done !')
+        # print(patient_id + ' done !')
