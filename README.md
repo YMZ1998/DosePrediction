@@ -6,6 +6,11 @@ Dose prediction.
 
 [OpenKBP Challenge ](https://github.com/ababier/open-kbp)
 
+```
+mkdir Data
+git clone https://github.com/ababier/open-kbp.git
+```
+
 
 ## Reference
 
