@@ -43,8 +43,8 @@ def online_evaluation(trainer):
                                                possible_dose_mask)
             list_Dose_score.append(Dose_score)
 
-            trainer.print_log_to_file('==> ' + patient_name + ':  ' + str(Dose_score) + '\n', 'a')
+            trainer.print_log_to_file('==> ' + patient_name + ':  ' + str(Dose_score), 'a')
 
-    trainer.print_log_to_file('==> mean Dose score: ' + str(np.mean(list_Dose_score))+'\n', 'a')
+    trainer.print_log_to_file('==> mean Dose score: ' + str(np.mean(list_Dose_score)), 'a')
 
     return np.mean(list_Dose_score)

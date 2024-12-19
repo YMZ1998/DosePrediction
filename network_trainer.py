@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
+import datetime
 import math
+import os
 import sys
 import time
 
@@ -15,6 +17,7 @@ class TrainerSetting:
         self.project_name = None
         # Path for saving model and training log
         self.output_dir = None
+        self.log_file = "log_{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M"))
 
         # Generally only use one of them
         self.max_iter = 99999999
@@ -216,7 +219,7 @@ class NetworkTrainer:
 
         return loss
 
-    def train(self):
+    def train_one_epoch(self):
         time_start_train = time.time()
 
         self.setting.network.train()
@@ -292,16 +295,16 @@ class NetworkTrainer:
             time_start_this_epoch = time.time()
             self.log.epoch += 1
             # Print current learning rate
-            self.print_log_to_file('Epoch: %d' % self.log.epoch, 'a')
-            self.print_log_to_file('Begin lr is %.5f, %.5f' % (
-                self.setting.optimizer.param_groups[0]['lr'], self.setting.optimizer.param_groups[-1]['lr']), 'a')
+            self.print_log_to_file('Epoch {}/{}'.format(self.log.epoch, self.setting.max_epoch), 'a')
+            self.print_log_to_file('Lr is %.5f, %.5f' % (
+                self.setting.optimizer.param_groups[0]['lr'], self.setting.optimizer.param_groups[1]['lr']), 'a')
 
             # Record initial learning rate for this epoch
             self.log.list_lr_associate_iter.append([self.setting.optimizer.param_groups[0]['lr'], self.log.iter])
             self.log.save_status = []
 
             self.time.__init__()
-            self.train()
+            self.train_one_epoch()
             self.val()
 
             # If update learning rate per epoch
@@ -338,7 +341,7 @@ class NetworkTrainer:
         self.print_log_to_file('==> End', 'a')
 
     def print_log_to_file(self, txt, mode='a'):
-        with open(self.setting.output_dir + '/log.txt', mode) as log_:
+        with open(os.path.join(self.setting.output_dir,self.setting.log_file), mode) as log_:
             log_.write(txt + '\n')
 
         # Also display log in the terminal

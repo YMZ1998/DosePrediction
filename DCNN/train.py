@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=64, help='batch size for training')
     parser.add_argument('--list_GPU_ids', nargs='+', type=int, default=[0], help='list_GPU_ids for training')
     parser.add_argument("--epochs", default=300, type=int, metavar="N", help="number of total epochs to train")
-    parser.add_argument('--resume', default=False, type=bool, help="Resume from the last checkpoint")
+    parser.add_argument('--resume', default=True, type=bool, help="Resume from the last checkpoint")
     args = parser.parse_args()
 
     #  Start training
