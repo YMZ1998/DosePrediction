@@ -249,7 +249,7 @@ class NetworkTrainer:
             # Print loss during the first epoch
             # if self.log.epoch == 0:
             #     if self.log.iter % 10 == 0:
-            #         self.print_log_to_file('Iter %12d       %12.5f\n' %(self.log.iter, self.log.moving_train_loss), 'a')
+            #         self.print_log_to_file('Iter %12d       %12.5f' %(self.log.iter, self.log.moving_train_loss), 'a')
 
             time_start_load_data = time.time()
 
@@ -257,7 +257,7 @@ class NetworkTrainer:
             average_loss = sum_train_loss / count_iter
             self.update_average_statistics(average_loss, phase='train')
 
-        self.print_log_to_file('Epoch %5d, loss %.5f\n' % (self.log.epoch, self.log.moving_train_loss), 'a')
+        self.print_log_to_file('Epoch %5d, loss %.5f' % (self.log.epoch, self.log.moving_train_loss), 'a')
         self.time.train_time_per_epoch = time.time() - time_start_train
 
     def val(self):
@@ -265,7 +265,7 @@ class NetworkTrainer:
         self.setting.network.eval()
 
         if self.setting.online_evaluation_function_val is None:
-            self.print_log_to_file('==> No online evaluation method specified ! \n', 'a')
+            self.print_log_to_file('==> No online evaluation method specified ! ', 'a')
             raise Exception('No online evaluation method specified !')
         else:
             val_index = self.setting.online_evaluation_function_val(self)
@@ -275,19 +275,19 @@ class NetworkTrainer:
 
     def run(self):
         if self.log.iter == 0:
-            self.print_log_to_file('Start training !\n', 'w')
+            self.print_log_to_file('Start training !', 'w')
         else:
-            self.print_log_to_file('Continue training !\n', 'w')
-        self.print_log_to_file(time.strftime('Local time: %H:%M:%S\n', time.localtime(time.time())), 'a')
+            self.print_log_to_file('Continue training !', 'w')
+        self.print_log_to_file(time.strftime('Local time: %H:%M:%S', time.localtime(time.time())), 'a')
 
         # Start training
         while (self.log.epoch < self.setting.max_epoch - 1) and (self.log.iter < self.setting.max_iter - 1):
-            self.print_log_to_file('-' * 20)
+            self.print_log_to_file('-' * 30)
             time_start_this_epoch = time.time()
             self.log.epoch += 1
             # Print current learning rate
-            self.print_log_to_file('Epoch: %d, iter: %d\n' % (self.log.epoch, self.log.iter), 'a')
-            self.print_log_to_file('Begin lr is %.5f, %.5f\n' % (
+            self.print_log_to_file('Epoch: %d, iter: %d' % (self.log.epoch, self.log.iter), 'a')
+            self.print_log_to_file('Begin lr is %.5f, %.5f' % (
                 self.setting.optimizer.param_groups[0]['lr'], self.setting.optimizer.param_groups[-1]['lr']), 'a')
 
             # Record initial learning rate for this epoch
@@ -312,28 +312,28 @@ class NetworkTrainer:
                     self.save_trainer(status=status)
                 self.log.save_status = []
 
-            self.print_log_to_file('Average train loss is %.5ff, best is %.5f\n' %
+            self.print_log_to_file('Average train loss is %.5ff, best is %.5f' %
                                    (self.log.average_train_loss, self.log.best_average_train_loss), 'a')
-            self.print_log_to_file('Average val evaluation index is %.5f, best is %.5f\n'
+            self.print_log_to_file('Average val evaluation index is %.5f, best is %.5f'
                                    % (self.log.average_val_index, self.log.best_average_val_index), 'a')
 
-            # self.print_log_to_file('Train use time %.2f\n' % (self.time.train_time_per_epoch), 'a')
-            # self.print_log_to_file('Train loader use time %.2f\n' % (self.time.train_loader_time_per_epoch), 'a')
-            # self.print_log_to_file('Val use time %.2f \n' % (self.time.val_time_per_epoch), 'a')
-            self.print_log_to_file('Total use time %.2f \n' % (time.time() - time_start_this_epoch), 'a')
-            # self.print_log_to_file('End lr is %.5f, %.5f\n' % (
+            # self.print_log_to_file('Train use time %.2f' % (self.time.train_time_per_epoch), 'a')
+            # self.print_log_to_file('Train loader use time %.2f' % (self.time.train_loader_time_per_epoch), 'a')
+            # self.print_log_to_file('Val use time %.2f ' % (self.time.val_time_per_epoch), 'a')
+            self.print_log_to_file('Total use time %.2f ' % (time.time() - time_start_this_epoch), 'a')
+            # self.print_log_to_file('End lr is %.5f, %.5f' % (
             #     self.setting.optimizer.param_groups[0]['lr'], self.setting.optimizer.param_groups[-1]['lr']), 'a')
-            # self.print_log_to_file(time.strftime('time: %H:%M:%S\n', time.localtime(time.time())), 'a')
-            self.print_log_to_file('-' * 20)
+            # self.print_log_to_file(time.strftime('time: %H:%M:%S', time.localtime(time.time())), 'a')
+            self.print_log_to_file('-' * 30)
 
-        self.print_log_to_file('==> End successfully\n', 'a')
+        self.print_log_to_file('==> End successfully', 'a')
 
     def print_log_to_file(self, txt, mode='a'):
         with open(self.setting.output_dir + '/log.txt', mode) as log_:
-            log_.write(txt)
+            log_.write(txt + '\n')
 
         # Also display log in the terminal
-        txt = txt.replace('\n', '')
+        # txt = txt.replace('\n', '')
         print(txt)
 
     def save_trainer(self, status='latest'):
@@ -353,11 +353,11 @@ class NetworkTrainer:
         }
 
         torch.save(ckpt, self.setting.output_dir + '/' + status + '.pkl')
-        self.print_log_to_file('==> Saving ' + status + ' model successfully !\n', 'a')
+        self.print_log_to_file('==> Saving ' + status + ' model successfully !', 'a')
 
     # Default load trainer in cpu, please reset device using the function self.set_GPU_device
     def init_trainer(self, ckpt_file, list_GPU_ids, only_network=True):
-        ckpt = torch.load(ckpt_file, map_location='cpu')
+        ckpt = torch.load(ckpt_file, weights_only=False, map_location='cpu')
 
         self.setting.network.load_state_dict(ckpt['network_state_dict'])
 
@@ -376,4 +376,5 @@ class NetworkTrainer:
                 key[1]['exp_avg_sq'] = key[1]['exp_avg_sq'].to(self.setting.device)
                 key[1]['max_exp_avg_sq'] = key[1]['max_exp_avg_sq'].to(self.setting.device)
 
-        self.print_log_to_file('==> Init trainer from ' + ckpt_file + ' successfully! \n', 'a')
+        # self.print_log_to_file('==> Init trainer from ' + ckpt_file + ' successfully! ', 'a')
+        print('==> Init trainer from ' + ckpt_file + ' successfully!')

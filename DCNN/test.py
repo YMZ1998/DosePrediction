@@ -6,10 +6,10 @@ from tqdm import tqdm
 if os.path.abspath('..') not in sys.path:
     sys.path.insert(0, os.path.abspath('..'))
 
-from Evaluate.evaluate_openKBP import *
+from evaluate_openKBP import *
 from model import *
-from NetworkTrainer.network_trainer import *
-from DataLoader.dataloader_OpenKBP_DCNN import read_data, pre_processing
+from network_trainer import *
+from dataloader_OpenKBP_DCNN import read_data, pre_processing
 
 
 def copy_sitk_imageinfo(image1, image2):
@@ -84,7 +84,7 @@ def inference(trainer, list_patient_dirs, save_path, do_TTA=True):
             prediction_dose = 70. * prediction_dose
 
             # Save prediction to nii image
-            templete_nii = sitk.ReadImage('../../Data/OpenKBP_C3D/pt_1/possible_dose_mask.nii.gz')
+            templete_nii = sitk.ReadImage('../Data/OpenKBP_C3D/pt_1/possible_dose_mask.nii.gz')
             prediction_nii = sitk.GetImageFromArray(prediction_dose)
             prediction_nii = copy_sitk_imageinfo(templete_nii, prediction_nii)
             if not os.path.exists(save_path + '/' + patient_id):
@@ -93,11 +93,11 @@ def inference(trainer, list_patient_dirs, save_path, do_TTA=True):
 
 
 if __name__ == "__main__":
-    if not os.path.exists('../../Data/OpenKBP_C3D'):
+    if not os.path.exists('../Data/OpenKBP_C3D'):
         raise Exception('OpenKBP_C3D should be prepared before testing, please run prepare_OpenKBP_C3D.py')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='../../Output/DCNN/best_val_evaluation_index.pkl')
+    parser.add_argument('--model_path', type=str, default='../Output/DCNN/best_val_evaluation_index.pkl')
     parser.add_argument('--TTA', type=bool, default=True,
                         help='do test-time augmentation, default True')
     parser.add_argument('--GPU_id', type=int, default=0,
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
     trainer = NetworkTrainer()
     trainer.setting.project_name = 'DCNN'
-    trainer.setting.output_dir = '../../Output/DCNN'
+    trainer.setting.output_dir = '../Output/DCNN'
 
     trainer.setting.network = Model(in_ch=4, out_ch=1,
                                     list_ch=[-1, 32, 64, 128, 256])
@@ -117,14 +117,14 @@ if __name__ == "__main__":
                          only_network=True)
 
     # Start inference
-    print('# \n\nStart inference !')
-    list_patient_dirs = ['../../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(241, 341)]
+    print('Start inference !')
+    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(241, 251)]
     inference(trainer, list_patient_dirs, save_path=trainer.setting.output_dir + '/Prediction', do_TTA=args.TTA)
 
     # Evaluation
-    print('# \n\nStart evaluation !')
+    print('Start evaluation !')
     Dose_score, DVH_score = get_Dose_score_and_DVH_score(prediction_dir=trainer.setting.output_dir + '/Prediction',
-                                                         gt_dir='../../Data/OpenKBP_C3D')
-    print('\n\nDose score is: ' + str(Dose_score))
+                                                         gt_dir='../Data/OpenKBP_C3D')
+    print('Dose score is: ' + str(Dose_score))
     print('DVH score is: ' + str(DVH_score))
 

@@ -171,7 +171,7 @@ class Model(nn.Module):
                 nn.init.constant_(m.bias, 0.)
 
     def initialize(self):
-        print('# random init encoder weight using nn.init.kaiming_uniform !')
+        print('random init encoder weight using nn.init.kaiming_uniform !')
         self.init_conv_deconv_BN(self.decoder.modules)
         self.init_conv_deconv_BN(self.encoder.modules)
 

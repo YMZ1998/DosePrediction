@@ -7,7 +7,7 @@ if os.path.abspath('..') not in sys.path:
 import argparse
 
 from dataloader_OpenKBP_DCNN import get_loader
-from NetworkTrainer.network_trainer import NetworkTrainer
+from network_trainer import NetworkTrainer
 from model import Model
 from online_evaluation import online_evaluation
 from loss import Loss

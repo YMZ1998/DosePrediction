@@ -7,16 +7,16 @@ if os.path.abspath('..') not in sys.path:
 import argparse
 
 from dataloader_OpenKBP_C3D import get_loader
-from NetworkTrainer.network_trainer import NetworkTrainer
+from network_trainer import NetworkTrainer
 from model import Model
 from online_evaluation import online_evaluation
 from loss import Loss
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=2,
+    parser.add_argument('--batch_size', type=int, default=1,
                         help='batch size for training (default: 2)')
-    parser.add_argument('--list_GPU_ids', nargs='+', type=int, default=[1, 0],
+    parser.add_argument('--list_GPU_ids', nargs='+', type=int, default=[0],
                         help='list_GPU_ids for training (default: [1, 0])')
     parser.add_argument('--max_iter',  type=int, default=80000,
                         help='training iterations(default: 80000)')
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     #  Start training
     trainer = NetworkTrainer()
     trainer.setting.project_name = 'C3D'
-    trainer.setting.output_dir = '../../Output/C3D'
+    trainer.setting.output_dir = '../Output/C3D'
     list_GPU_ids = args.list_GPU_ids
 
     trainer.setting.network = Model(in_ch=9, out_ch=1,
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     trainer.setting.train_loader, trainer.setting.val_loader = get_loader(
         train_bs=args.batch_size,
         val_bs=1,
-        train_num_samples_per_epoch=args.batch_size * 500,  # 500 iterations per epoch
+        train_num_samples_per_epoch=args.batch_size * 50,
         val_num_samples_per_epoch=1,
         num_works=4
     )

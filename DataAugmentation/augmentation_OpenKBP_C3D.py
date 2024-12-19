@@ -52,11 +52,39 @@ def random_rotate_around_z_axis(list_images,
 
 
 # Random translation
+# def random_translate(list_images, roi_mask, p, max_shift, list_pad_value):
+#     if random.random() <= p:
+#         exist_mask = np.where(roi_mask > 0)
+#         ori_z, ori_h, ori_w = list_images[0].shape[1:]
+#         bz = min(max_shift - 1, np.min(exist_mask[0]))
+#         ez = max(ori_z - 1 - max_shift, np.max(exist_mask[0]))
+#         bh = min(max_shift - 1, np.min(exist_mask[1]))
+#         eh = max(ori_h - 1 - max_shift, np.max(exist_mask[1]))
+#         bw = min(max_shift - 1, np.min(exist_mask[2]))
+#         ew = max(ori_w - 1 - max_shift, np.max(exist_mask[2]))
+#
+#         for image_i in range(len(list_images)):
+#             list_images[image_i] = list_images[image_i][:, bz:ez + 1, bh:eh + 1, bw:ew + 1]
+#
+#         # Pad to original size
+#         list_images = random_pad_to_size_3d(list_images,
+#                                             target_size=[ori_z, ori_h, ori_w],
+#                                             list_pad_value=list_pad_value)
+#     return list_images
+
 def random_translate(list_images, roi_mask, p, max_shift, list_pad_value):
     if random.random() <= p:
+        # 获取 roi_mask 中大于0的元素的索引
         exist_mask = np.where(roi_mask > 0)
+
+        if exist_mask[0].size == 0:  # 如果 roi_mask 中没有大于0的元素
+            # print("roi_mask 中没有大于0的元素，跳过平移处理")
+            return list_images  # 不进行平移，直接返回原始图像列表
+
+        # 如果有大于0的元素，继续执行平移
         ori_z, ori_h, ori_w = list_images[0].shape[1:]
 
+        # 计算边界，避免越界
         bz = min(max_shift - 1, np.min(exist_mask[0]))
         ez = max(ori_z - 1 - max_shift, np.max(exist_mask[0]))
         bh = min(max_shift - 1, np.min(exist_mask[1]))
@@ -65,12 +93,14 @@ def random_translate(list_images, roi_mask, p, max_shift, list_pad_value):
         ew = max(ori_w - 1 - max_shift, np.max(exist_mask[2]))
 
         for image_i in range(len(list_images)):
+            # 截取图像的相关区域
             list_images[image_i] = list_images[image_i][:, bz:ez + 1, bh:eh + 1, bw:ew + 1]
 
-        # Pad to original size
+        # 对图像进行填充，恢复到原始尺寸
         list_images = random_pad_to_size_3d(list_images,
                                             target_size=[ori_z, ori_h, ori_w],
                                             list_pad_value=list_pad_value)
+
     return list_images
 
 

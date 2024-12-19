@@ -67,7 +67,7 @@ def pre_processing(dict_images):
     OAR_all = np.concatenate([dict_images[OAR_name] for OAR_name in list_OAR_names], axis=0)
 
     # CT image
-    CT = dict_images['CT']
+    CT = dict_images['CT'].astype(np.float32)
     CT = np.clip(CT, a_min=-1024, a_max=1500)
     CT = CT.astype(np.float32) / 1000.
 
@@ -119,8 +119,8 @@ class MyDataset(data.Dataset):
         self.num_samples_per_epoch = num_samples_per_epoch
         self.transform = {'train': train_transform, 'val': val_transform}
 
-        self.list_case_id = {'train': ['../../Data/OpenKBP_C3D/pt_' + str(i) for i in range(1, 201)],
-                             'val': ['../../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 241)]}[phase]
+        self.list_case_id = {'train': ['../../Data/OpenKBP_C3D/pt_' + str(i) for i in range(1, 11)],
+                             'val': ['../../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 211)]}[phase]
 
         random.shuffle(self.list_case_id)
         self.sum_case = len(self.list_case_id)

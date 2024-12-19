@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 from dataloader_OpenKBP_DCNN import val_transform, read_data, pre_processing
-from Evaluate.evaluate_openKBP import *
+from evaluate_openKBP import *
 from model import *
 
 

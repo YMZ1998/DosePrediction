@@ -1,11 +1,11 @@
 # -*- encoding: utf-8 -*-
 from dataloader_OpenKBP_C3D import val_transform, read_data, pre_processing
-from Evaluate.evaluate_openKBP import *
+from evaluate_openKBP import *
 from model import *
 
 
 def online_evaluation(trainer):
-    list_patient_dirs = ['../../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 241)]
+    list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 211)]
 
     list_Dose_score = []
 
@@ -34,12 +34,12 @@ def online_evaluation(trainer):
             list_Dose_score.append(Dose_score)
 
             try:
-                trainer.print_log_to_file('========> ' + patient_name + ':  ' + str(Dose_score), 'a')
+                trainer.print_log_to_file('==> ' + patient_name + ':  ' + str(Dose_score), 'a')
             except:
                 pass
 
     try:
-        trainer.print_log_to_file('===============================================> mean Dose score: '
+        trainer.print_log_to_file('==> mean Dose score: '
                                   + str(np.mean(list_Dose_score)), 'a')
     except:
         pass
