@@ -8,7 +8,7 @@ if os.path.abspath('..') not in sys.path:
 
 from evaluate_openKBP import *
 from model import *
-from network_trainer import *
+from network_trainer import NetworkTrainer
 from dataloader_OpenKBP_DCNN import read_data, pre_processing
 
 

@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import torch
 import torch.nn as nn
 
 
@@ -11,7 +12,7 @@ class Loss(nn.Module):
         pred_dose = pred[0]
         gt_dose = gt[0]
         possible_dose_mask = gt[1]
-
+        # print(torch.sum(possible_dose_mask))
         pred_dose = pred_dose[possible_dose_mask > 0]
         gt_dose = gt_dose[possible_dose_mask > 0]
 

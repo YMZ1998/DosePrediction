@@ -1,10 +1,12 @@
 # -*- encoding: utf-8 -*-
-import torch.utils.data as data
 import os
-import SimpleITK as sitk
-import numpy as np
 import random
+
+import SimpleITK as sitk
 import cv2
+import numpy as np
+import torch.utils.data as data
+from torch.utils.data import DataLoader
 
 from DataAugmentation.augmentation_OpenKBP_DCNN import \
     random_flip_2d, random_rotate_around_z_axis, random_translate, to_tensor
@@ -15,6 +17,8 @@ Output images are always C*H*W
 
 
 def read_data(patient_dir, slice_index):
+    if not os.path.exists(patient_dir):
+        raise ValueError('Patient directory does not exist!')
     dict_images = {}
     list_structures = ['CT',
                        'possible_dose_mask',
@@ -47,7 +51,7 @@ def read_data(patient_dir, slice_index):
         else:
             # print(structure_file + ' does not exist!')
             dict_images[structure_name] = np.zeros((1, 128, 128), np.uint8)
-
+    # print(patient_dir, np.sum(dict_images['possible_dose_mask']))
     return dict_images
 
 
@@ -120,27 +124,30 @@ def val_transform(list_images):
 
 
 class MyDataset(data.Dataset):
-    def __init__(self, num_samples_per_epoch, phase):
+    def __init__(self, phase):
         self.phase = phase
-        self.num_samples_per_epoch = num_samples_per_epoch
         self.transform = {'train': train_transform, 'val': val_transform}
 
-        self.list_case_id = {'train': ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(1, 201)],
+        self.list_case_id = {'train': ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(1, 101)],
                              'val': ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 241)]}[phase]
-        random.shuffle(self.list_case_id)
-        self.sum_case = len(self.list_case_id)
+        self.list_case_indices = []
+        for case_id in self.list_case_id:
+            list_files = os.listdir(case_id)
+            for file_i in list_files:
+                if "CT" in file_i:
+                    # print(file_i)
+                    target_slice = int(file_i.split('_')[-1].split('.')[0])
+                    self.list_case_indices.append((case_id, target_slice))
+        # print(self.list_case_indices)
+        random.shuffle(self.list_case_indices)
 
     def __getitem__(self, index_):
-        if index_ <= self.sum_case - 1:
-            case_id = self.list_case_id[index_]
-        else:
-            new_index_ = index_ - (index_ // self.sum_case) * self.sum_case
-            case_id = self.list_case_id[new_index_]
-        # print(index_, case_id)
-
+        case_id = self.list_case_indices[index_][0]
+        target_slice = self.list_case_indices[index_][1]
         # Randomly pick a slice as input
-        list_files = os.listdir(case_id)
-        target_slice = int(random.sample(list_files, 1)[0].split('_')[-1].split('.')[0])
+        # list_files = os.listdir(case_id)
+        # target_slice = int(random.sample(list_files, 1)[0].split('_')[-1].split('.')[0])
+        # print(case_id, target_slice)
 
         dict_images = read_data(case_id, slice_index=target_slice)
         list_images = pre_processing(dict_images)
@@ -150,16 +157,18 @@ class MyDataset(data.Dataset):
         return list_images
 
     def __len__(self):
-        return self.num_samples_per_epoch
+        return len(self.list_case_indices)
 
 
-def get_loader(train_bs=1, val_bs=1, train_num_samples_per_epoch=1, val_num_samples_per_epoch=1, num_works=0):
-    train_dataset = MyDataset(num_samples_per_epoch=train_num_samples_per_epoch, phase='train')
-    val_dataset = MyDataset(num_samples_per_epoch=val_num_samples_per_epoch, phase='val')
+def get_train_loader(batch_size=1, num_workers=8):
+    train_dataset = MyDataset(phase='train')
+    train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers,
+                              pin_memory=False)
+    return train_loader
 
-    train_loader = data.DataLoader(dataset=train_dataset, batch_size=train_bs, shuffle=True, num_workers=num_works,
-                                   pin_memory=False)
-    val_loader = data.DataLoader(dataset=val_dataset, batch_size=val_bs, shuffle=False, num_workers=num_works,
-                                 pin_memory=False)
 
-    return train_loader, val_loader
+def get_val_loader(batch_size=1, num_workers=8):
+    val_dataset = MyDataset(phase='val')
+    val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers,
+                            pin_memory=False)
+    return val_loader

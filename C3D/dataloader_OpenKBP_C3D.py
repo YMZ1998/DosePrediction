@@ -5,6 +5,7 @@ import SimpleITK as sitk
 import numpy as np
 import random
 import cv2
+from torch.utils.data import DataLoader
 
 from DataAugmentation.augmentation_OpenKBP_C3D import \
     random_flip_3d, random_rotate_around_z_axis, random_translate, to_tensor
@@ -15,6 +16,8 @@ images are always C*Z*H*W
 
 
 def read_data(patient_dir):
+    if not os.path.exists(patient_dir):
+        raise ValueError('Patient directory does not exist!')
     dict_images = {}
     list_structures = ['CT',
                        'PTV70',
@@ -46,7 +49,7 @@ def read_data(patient_dir):
             dict_images[structure_name] = sitk.GetArrayFromImage(dict_images[structure_name])[np.newaxis, :, :, :]
         else:
             dict_images[structure_name] = np.zeros((1, 128, 128, 128), np.uint8)
-
+    # print(patient_dir, np.sum(dict_images['possible_dose_mask']))
     return dict_images
 
 
@@ -113,24 +116,18 @@ def val_transform(list_images):
 
 
 class MyDataset(data.Dataset):
-    def __init__(self, num_samples_per_epoch, phase):
+    def __init__(self, phase):
         # 'train' or 'val
         self.phase = phase
-        self.num_samples_per_epoch = num_samples_per_epoch
         self.transform = {'train': train_transform, 'val': val_transform}
 
-        self.list_case_id = {'train': ['../../Data/OpenKBP_C3D/pt_' + str(i) for i in range(1, 11)],
-                             'val': ['../../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 211)]}[phase]
+        self.list_case_id = {'train': ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(1, 201)],
+                             'val': ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 241)]}[phase]
 
         random.shuffle(self.list_case_id)
-        self.sum_case = len(self.list_case_id)
 
-    def __getitem__(self, index_):
-        if index_ <= self.sum_case - 1:
-            case_id = self.list_case_id[index_]
-        else:
-            new_index_ = index_ - (index_ // self.sum_case) * self.sum_case
-            case_id = self.list_case_id[new_index_]
+    def __getitem__(self, index):
+        case_id = self.list_case_id[index]
 
         dict_images = read_data(case_id)
         list_images = pre_processing(dict_images)
@@ -139,16 +136,18 @@ class MyDataset(data.Dataset):
         return list_images
 
     def __len__(self):
-        return self.num_samples_per_epoch
+        return len(self.list_case_id)
 
 
-def get_loader(train_bs=1, val_bs=1, train_num_samples_per_epoch=1, val_num_samples_per_epoch=1, num_works=0):
-    train_dataset = MyDataset(num_samples_per_epoch=train_num_samples_per_epoch, phase='train')
-    val_dataset = MyDataset(num_samples_per_epoch=val_num_samples_per_epoch, phase='val')
+def get_train_loader(batch_size=1, num_workers=8):
+    train_dataset = MyDataset(phase='train')
+    train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers,
+                              pin_memory=False)
+    return train_loader
 
-    train_loader = data.DataLoader(dataset=train_dataset, batch_size=train_bs, shuffle=True, num_workers=num_works,
-                                   pin_memory=False)
-    val_loader = data.DataLoader(dataset=val_dataset, batch_size=val_bs, shuffle=False, num_workers=num_works,
-                                 pin_memory=False)
 
-    return train_loader, val_loader
+def get_val_loader(batch_size=1, num_workers=8):
+    val_dataset = MyDataset(phase='val')
+    val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers,
+                            pin_memory=False)
+    return val_loader

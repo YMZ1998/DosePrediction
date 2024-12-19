@@ -49,10 +49,9 @@ def get_DVH_metrics(_dose, _mask, mode, spacing=None):
 
 
 def get_Dose_score_and_DVH_score(prediction_dir, gt_dir):
-
     list_dose_dif = []
     list_DVH_dif = []
-    
+
     list_patient_ids = tqdm(os.listdir(prediction_dir))
     for patient_id in list_patient_ids:
         pred_nii = sitk.ReadImage(prediction_dir + '/' + patient_id + '/dose.nii.gz')
@@ -65,7 +64,7 @@ def get_Dose_score_and_DVH_score(prediction_dir, gt_dir):
         possible_dose_mask_nii = sitk.ReadImage(gt_dir + '/' + patient_id + '/possible_dose_mask.nii.gz')
         possible_dose_mask = sitk.GetArrayFromImage(possible_dose_mask_nii)
         list_dose_dif.append(get_3D_Dose_dif(pred, gt, possible_dose_mask))
-        
+
         # DVH dif
         for structure_name in ['Brainstem',
                                'SpinalCord',
@@ -95,5 +94,17 @@ def get_Dose_score_and_DVH_score(prediction_dir, gt_dir):
 
                 for metric in gt_DVH.keys():
                     list_DVH_dif.append(abs(gt_DVH[metric] - pred_DVH[metric]))
-            
+
     return np.mean(list_dose_dif), np.mean(list_DVH_dif)
+
+
+def evaluate_OpenKBP(prediction_dir, gt_dir='./Data/OpenKBP_C3D'):
+    print('Start evaluation !')
+    Dose_score, DVH_score = get_Dose_score_and_DVH_score(prediction_dir='./Output/C3D' + '/Prediction',
+                                                         gt_dir='./Data/OpenKBP_C3D')
+    print('Dose score is: ' + str(Dose_score))
+    print('DVH score is: ' + str(DVH_score))
+
+
+if __name__ == "__main__":
+    evaluate_OpenKBP('./Output/C3D')

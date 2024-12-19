@@ -131,7 +131,7 @@ class BaseUNet(nn.Module):
                 nn.init.constant_(m.bias, 0.)
 
     def initialize(self):
-        print('random init encoder weight using nn.init.kaiming_uniform !')
+        # print('random init encoder weight using nn.init.kaiming_uniform !')
         self.init_conv_IN(self.decoder.modules)
         self.init_conv_IN(self.encoder.modules)
 

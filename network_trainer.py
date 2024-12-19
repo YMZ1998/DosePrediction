@@ -1,7 +1,9 @@
 # -*- encoding: utf-8 -*-
+import math
 import sys
 import time
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch import optim
@@ -35,7 +37,7 @@ class TrainerSetting:
         self.lr_scheduler_type = None
 
         # Default update learning rate after each epoch
-        self.lr_scheduler_update_on_iter = False
+        # self.lr_scheduler_update_on_iter = False
 
         self.loss_function = None
 
@@ -53,9 +55,9 @@ class TrainerLog:
         # Average train loss of a epoch
         self.average_train_loss = 99999999.
         self.best_average_train_loss = 99999999.
-        # Evaluation index is the higher the better
-        self.average_val_index = -99999999.
-        self.best_average_val_index = -99999999.
+        # Evaluation index is the lower the better
+        self.average_val_index = 99999999.
+        self.best_average_val_index = 99999999.
 
         # Record changes in training loss
         self.list_average_train_loss_associate_iter = []
@@ -132,11 +134,13 @@ class NetworkTrainer:
                                                                        )
         elif lr_scheduler_type == 'cosine':
             self.setting.lr_scheduler_type = 'cosine'
-            self.setting.lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.setting.optimizer,
-                                                                             T_max=args['T_max'],
-                                                                             eta_min=args['eta_min'],
-                                                                             last_epoch=args['last_epoch']
-                                                                             )
+            # self.setting.lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.setting.optimizer,
+            #                                                                  T_max=args['T_max'],
+            #                                                                  eta_min=args['eta_min'],
+            #                                                                  last_epoch=args['last_epoch']
+            #                                                                  )
+            lf = lambda x: ((1 + math.cos(x * math.pi / args['T_max'])) / 2) * (1 - 0.01) + 0.01
+            self.setting.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.setting.optimizer, lr_lambda=lf)
         elif lr_scheduler_type == 'ReduceLROnPlateau':
             self.setting.lr_scheduler_type = 'ReduceLROnPlateau'
             self.setting.lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.setting.optimizer,
@@ -156,6 +160,8 @@ class NetworkTrainer:
             self.setting.lr_scheduler.step(self.log.moving_train_loss)
         else:
             self.setting.lr_scheduler.step()
+        lr = self.setting.optimizer.param_groups[0]["lr"]
+        print('Learning rate: %.7f' % lr)
 
     def update_moving_train_loss(self, loss):
         if self.log.moving_train_loss is None:
@@ -175,7 +181,7 @@ class NetworkTrainer:
 
         elif phase == 'val':
             self.log.average_val_index = loss
-            if loss > self.log.best_average_val_index:
+            if loss < self.log.best_average_val_index:
                 self.log.best_average_val_index = loss
                 self.log.save_status.append('best_val_evaluation_index')
             self.log.list_average_val_index_associate_iter.append([self.log.average_val_index, self.log.iter])
@@ -214,14 +220,12 @@ class NetworkTrainer:
         time_start_train = time.time()
 
         self.setting.network.train()
-        sum_train_loss = 0.
+        train_losses = []
         count_iter = 0
 
         time_start_load_data = time.time()
         data_loader_train = tqdm(self.setting.train_loader, file=sys.stdout)
         for list_loader_output in data_loader_train:
-            # for batch_idx, list_loader_output in enumerate(self.setting.train_loader):
-
             if (self.setting.max_iter is not None) and (self.log.iter >= self.setting.max_iter - 1):
                 break
             self.log.iter += 1
@@ -240,11 +244,12 @@ class NetworkTrainer:
             loss = self.backward(output, target)
 
             # Used for counting average loss of this epoch
-            sum_train_loss += loss.item()
+            train_losses.append(loss.item())
+            # print(loss.item())
             count_iter += 1
 
             self.update_moving_train_loss(loss)
-            self.update_lr()
+            # self.update_lr()
 
             # Print loss during the first epoch
             # if self.log.epoch == 0:
@@ -252,12 +257,13 @@ class NetworkTrainer:
             #         self.print_log_to_file('Iter %12d       %12.5f' %(self.log.iter, self.log.moving_train_loss), 'a')
 
             time_start_load_data = time.time()
+            data_loader_train.desc = f"[train epoch {self.log.epoch}] loss: {np.mean(train_losses):.4f} "
 
-        if count_iter > 0:
-            average_loss = sum_train_loss / count_iter
-            self.update_average_statistics(average_loss, phase='train')
+        self.update_lr()
 
-        self.print_log_to_file('Epoch %5d, loss %.5f' % (self.log.epoch, self.log.moving_train_loss), 'a')
+        self.update_average_statistics(np.mean(train_losses), phase='train')
+
+        self.print_log_to_file('Epoch %d, loss %.5f' % (self.log.epoch, self.log.moving_train_loss), 'a')
         self.time.train_time_per_epoch = time.time() - time_start_train
 
     def val(self):
@@ -286,33 +292,36 @@ class NetworkTrainer:
             time_start_this_epoch = time.time()
             self.log.epoch += 1
             # Print current learning rate
-            self.print_log_to_file('Epoch: %d, iter: %d' % (self.log.epoch, self.log.iter), 'a')
+            self.print_log_to_file('Epoch: %d' % self.log.epoch, 'a')
             self.print_log_to_file('Begin lr is %.5f, %.5f' % (
                 self.setting.optimizer.param_groups[0]['lr'], self.setting.optimizer.param_groups[-1]['lr']), 'a')
 
             # Record initial learning rate for this epoch
             self.log.list_lr_associate_iter.append([self.setting.optimizer.param_groups[0]['lr'], self.log.iter])
+            self.log.save_status = []
 
             self.time.__init__()
             self.train()
             self.val()
 
             # If update learning rate per epoch
-            if not self.setting.lr_scheduler_update_on_iter:
-                self.update_lr()
+            # if not self.setting.lr_scheduler_update_on_iter:
+            #     self.update_lr()
 
             # Save trainer every "self.setting.save_per_epoch"
-            if (self.log.epoch + 1) % self.setting.save_per_epoch == 0:
-                self.log.save_status.append('iter_' + str(self.log.iter))
+            # if (self.log.epoch + 1) % self.setting.save_per_epoch == 0:
+            #     self.log.save_status.append('iter_' + str(self.log.iter))
             self.log.save_status.append('latest')
 
             # Try save trainer
             if len(self.log.save_status) > 0:
+                print('Saving trainer...')
+                print(self.log.save_status)
                 for status in self.log.save_status:
                     self.save_trainer(status=status)
                 self.log.save_status = []
 
-            self.print_log_to_file('Average train loss is %.5ff, best is %.5f' %
+            self.print_log_to_file('Average train loss is %.5f, best is %.5f' %
                                    (self.log.average_train_loss, self.log.best_average_train_loss), 'a')
             self.print_log_to_file('Average val evaluation index is %.5f, best is %.5f'
                                    % (self.log.average_val_index, self.log.best_average_val_index), 'a')
@@ -326,14 +335,14 @@ class NetworkTrainer:
             # self.print_log_to_file(time.strftime('time: %H:%M:%S', time.localtime(time.time())), 'a')
             self.print_log_to_file('-' * 30)
 
-        self.print_log_to_file('==> End successfully', 'a')
+        self.print_log_to_file('==> End', 'a')
 
     def print_log_to_file(self, txt, mode='a'):
         with open(self.setting.output_dir + '/log.txt', mode) as log_:
             log_.write(txt + '\n')
 
         # Also display log in the terminal
-        # txt = txt.replace('\n', '')
+        txt = txt.replace('\n', '')
         print(txt)
 
     def save_trainer(self, status='latest'):
@@ -353,10 +362,11 @@ class NetworkTrainer:
         }
 
         torch.save(ckpt, self.setting.output_dir + '/' + status + '.pkl')
-        self.print_log_to_file('==> Saving ' + status + ' model successfully !', 'a')
+        # self.print_log_to_file('==> Saving ' + status + ' model', 'a')
 
     # Default load trainer in cpu, please reset device using the function self.set_GPU_device
     def init_trainer(self, ckpt_file, list_GPU_ids, only_network=True):
+        print('==> Loading ' + ckpt_file + '...')
         ckpt = torch.load(ckpt_file, weights_only=False, map_location='cpu')
 
         self.setting.network.load_state_dict(ckpt['network_state_dict'])
@@ -376,5 +386,4 @@ class NetworkTrainer:
                 key[1]['exp_avg_sq'] = key[1]['exp_avg_sq'].to(self.setting.device)
                 key[1]['max_exp_avg_sq'] = key[1]['max_exp_avg_sq'].to(self.setting.device)
 
-        # self.print_log_to_file('==> Init trainer from ' + ckpt_file + ' successfully! ', 'a')
-        print('==> Init trainer from ' + ckpt_file + ' successfully!')
+        print('==> Init trainer from ' + ckpt_file + '...')

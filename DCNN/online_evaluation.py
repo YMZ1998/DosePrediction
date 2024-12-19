@@ -5,7 +5,7 @@ from model import *
 
 
 def online_evaluation(trainer):
-    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 241)]
+    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 211)]
 
     list_Dose_score = []
 
@@ -47,4 +47,4 @@ def online_evaluation(trainer):
 
     trainer.print_log_to_file('==> mean Dose score: ' + str(np.mean(list_Dose_score))+'\n', 'a')
 
-    return - np.mean(list_Dose_score)
+    return np.mean(list_Dose_score)

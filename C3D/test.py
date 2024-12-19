@@ -1,14 +1,16 @@
 # -*- encoding: utf-8 -*-
+import argparse
 import os
 import sys
-import argparse
-from tqdm import tqdm
-if os.path.abspath('..') not in sys.path:
-    sys.path.insert(0, os.path.abspath('..'))
 
-from evaluate_openKBP import *
-from model import *
-from network_trainer import *
+import SimpleITK as sitk
+import numpy as np
+import torch
+from tqdm import tqdm
+
+from evaluate_openKBP import get_Dose_score_and_DVH_score
+from model import Model
+from network_trainer import NetworkTrainer
 
 
 def read_data(patient_dir):
@@ -115,7 +117,7 @@ def inference(trainer, list_patient_dirs, save_path, do_TTA=True):
 
     with torch.no_grad():
         trainer.setting.network.eval()
-        for patient_dir in tqdm(list_patient_dirs):
+        for patient_dir in tqdm(list_patient_dirs, file=sys.stdout):
             patient_id = patient_dir.split('/')[-1]
 
             dict_images = read_data(patient_dir)
@@ -171,7 +173,7 @@ if __name__ == "__main__":
 
     # Start inference
     print('Start inference !')
-    list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(241, 341)]
+    list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(241, 251)]
     inference(trainer, list_patient_dirs, save_path=trainer.setting.output_dir + '/Prediction', do_TTA=args.TTA)
 
     # Evaluation
@@ -181,4 +183,3 @@ if __name__ == "__main__":
 
     print('Dose score is: ' + str(Dose_score))
     print('DVH score is: ' + str(DVH_score))
-
