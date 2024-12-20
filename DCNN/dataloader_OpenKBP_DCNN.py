@@ -128,7 +128,7 @@ class MyDataset(data.Dataset):
         self.phase = phase
         self.transform = {'train': train_transform, 'val': val_transform}
 
-        self.list_case_id = {'train': ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(1, 101)],
+        self.list_case_id = {'train': ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(1, 201)],
                              'val': ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 241)]}[phase]
         self.list_case_indices = []
         for case_id in self.list_case_id:

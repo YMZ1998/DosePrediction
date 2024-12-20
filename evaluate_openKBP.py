@@ -98,13 +98,21 @@ def get_Dose_score_and_DVH_score(prediction_dir, gt_dir):
     return np.mean(list_dose_dif), np.mean(list_DVH_dif)
 
 
-def evaluate_OpenKBP(prediction_dir, gt_dir='./Data/OpenKBP_C3D'):
+def evaluate_OpenKBP(prediction_dir):
     print('Start evaluation !')
-    Dose_score, DVH_score = get_Dose_score_and_DVH_score(prediction_dir='./Output/C3D' + '/Prediction',
+    if not os.path.exists(prediction_dir):
+        raise Exception('Prediction dir {} not exist!'.format(prediction_dir))
+    print(prediction_dir)
+    Dose_score, DVH_score = get_Dose_score_and_DVH_score(prediction_dir=prediction_dir,
                                                          gt_dir='./Data/OpenKBP_C3D')
     print('Dose score is: ' + str(Dose_score))
     print('DVH score is: ' + str(DVH_score))
 
 
 if __name__ == "__main__":
-    evaluate_OpenKBP('./Output/C3D')
+    project_name = 'DCNN'
+    save_path = os.path.join('./Output', project_name, 'Prediction_' + str(True))
+    save_path2 = os.path.join('./Output', project_name, 'Prediction_' + str(False))
+
+    evaluate_OpenKBP(save_path)
+    evaluate_OpenKBP(save_path2)

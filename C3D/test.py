@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import argparse
 import os
+import shutil
 import sys
 
 import SimpleITK as sitk
@@ -11,6 +12,7 @@ from tqdm import tqdm
 from evaluate_openKBP import get_Dose_score_and_DVH_score
 from model import Model
 from network_trainer import NetworkTrainer
+from utils import copy_image_info
 
 
 def read_data(patient_dir):
@@ -75,14 +77,6 @@ def pre_processing(dict_images):
     return list_images
 
 
-def copy_sitk_imageinfo(image1, image2):
-    image2.SetSpacing(image1.GetSpacing())
-    image2.SetDirection(image1.GetDirection())
-    image2.SetOrigin(image1.GetOrigin())
-
-    return image2
-
-
 # Input is C*Z*H*W
 def flip_3d(input_, list_axes):
     if 'Z' in list_axes:
@@ -112,8 +106,9 @@ def test_time_augmentation(trainer, input_, TTA_mode):
 
 
 def inference(trainer, list_patient_dirs, save_path, do_TTA=True):
-    if not os.path.exists(save_path):
-        os.mkdir(save_path)
+    if os.path.exists(save_path):
+        shutil.rmtree(save_path)
+    os.makedirs(save_path, exist_ok=True)
 
     with torch.no_grad():
         trainer.setting.network.eval()
@@ -140,7 +135,7 @@ def inference(trainer, list_patient_dirs, save_path, do_TTA=True):
             # Save prediction to nii image
             templete_nii = sitk.ReadImage(patient_dir + '/possible_dose_mask.nii.gz')
             prediction_nii = sitk.GetImageFromArray(prediction)
-            prediction_nii = copy_sitk_imageinfo(templete_nii, prediction_nii)
+            prediction_nii = copy_image_info(templete_nii, prediction_nii)
             if not os.path.exists(save_path + '/' + patient_id):
                 os.mkdir(save_path + '/' + patient_id)
             sitk.WriteImage(prediction_nii, save_path + '/' + patient_id + '/dose.nii.gz')
@@ -151,35 +146,31 @@ if __name__ == "__main__":
         raise Exception('OpenKBP_C3D should be prepared before testing, please run prepare_OpenKBP_C3D.py')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--GPU_id', type=int, default=0,
-                        help='GPU id used for testing (default: 0)')
-    parser.add_argument('--model_path', type=str, default='../Output/C3D/best_val_evaluation_index.pkl')
-    parser.add_argument('--TTA', type=bool, default=True,
-                        help='do test-time augmentation, default True')
+    parser.add_argument('--GPU_id', type=int, default=0, help='GPU id used for testing (default: 0)')
+    parser.add_argument('--TTA', type=bool, default=True, help='do test-time augmentation, default True')
     args = parser.parse_args()
 
-    trainer = NetworkTrainer()
-    trainer.setting.project_name = 'C3D'
-    trainer.setting.output_dir = '../Output/C3D'
+    trainer = NetworkTrainer('C3D')
 
     trainer.setting.network = Model(in_ch=9, out_ch=1,
                                     list_ch_A=[-1, 16, 32, 64, 128, 256],
                                     list_ch_B=[-1, 32, 64, 128, 256, 512])
 
     # Load model weights
-    trainer.init_trainer(ckpt_file=args.model_path,
+    trainer.init_trainer(ckpt_file=trainer.setting.best_ckpt_file,
                          list_GPU_ids=[args.GPU_id],
                          only_network=True)
 
+    save_path = os.path.join(trainer.setting.output_dir, 'Prediction_' + str(args.TTA))
+
     # Start inference
     print('Start inference !')
-    list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(241, 251)]
-    inference(trainer, list_patient_dirs, save_path=trainer.setting.output_dir + '/Prediction', do_TTA=args.TTA)
+    list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 241)]
+    inference(trainer, list_patient_dirs, save_path=save_path, do_TTA=args.TTA)
 
     # Evaluation
     print('Start evaluation !')
-    Dose_score, DVH_score = get_Dose_score_and_DVH_score(prediction_dir=trainer.setting.output_dir + '/Prediction',
-                                                         gt_dir='../Data/OpenKBP_C3D')
-
+    Dose_score, DVH_score = get_Dose_score_and_DVH_score(prediction_dir=save_path, gt_dir='../Data/OpenKBP_C3D')
+    print('TTA :', args.TTA)
     print('Dose score is: ' + str(Dose_score))
     print('DVH score is: ' + str(DVH_score))

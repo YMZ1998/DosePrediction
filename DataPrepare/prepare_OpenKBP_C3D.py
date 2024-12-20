@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+import sys
+
 import SimpleITK as sitk
 import pandas as pd
 import numpy as np
@@ -51,7 +53,7 @@ if __name__ == '__main__':
         for patient_id in os.listdir(source_dir + '/' + sub_dir):
             list_patient_dirs.append(source_dir + '/' + sub_dir + '/' + patient_id)
 
-    for patient_dir in tqdm(list_patient_dirs):
+    for patient_dir in tqdm(list_patient_dirs, desc="Processing cases", file=sys.stdout):
         # Make dir for each patient
         patient_id = patient_dir.split('/')[-1]
         save_patient_path = save_dir + '/' + patient_id

@@ -16,13 +16,11 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=2, help='batch size for training')
     parser.add_argument('--list_GPU_ids', nargs='+', type=int, default=[0], help='list_GPU_ids for training')
     parser.add_argument("--epochs", default=100, type=int, metavar="N", help="number of total epochs to train")
-    parser.add_argument('--resume', default=True, type=bool, help="Resume from the last checkpoint")
+    parser.add_argument('--resume', default=False, type=bool, help="Resume from the last checkpoint")
     args = parser.parse_args()
 
     #  Start training
-    trainer = NetworkTrainer()
-    trainer.setting.project_name = 'C3D'
-    trainer.setting.output_dir = '../Output/C3D'
+    trainer = NetworkTrainer('C3D')
     list_GPU_ids = args.list_GPU_ids
 
     trainer.setting.network = Model(in_ch=9, out_ch=1,
@@ -34,7 +32,6 @@ if __name__ == '__main__':
     num_workers = min([os.cpu_count(), args.batch_size if args.batch_size > 1 else 0, 8])
     trainer.setting.train_loader = get_train_loader(batch_size=args.batch_size, num_workers=num_workers)
 
-    trainer.setting.eps_train_loss = 0.01
     trainer.setting.loss_function = Loss()
     trainer.setting.online_evaluation_function_val = online_evaluation
 
@@ -54,13 +51,12 @@ if __name__ == '__main__':
                              )
 
     if args.resume:
-        trainer.init_trainer(ckpt_file='../Output/C3D/latest.pkl',
+        trainer.init_trainer(ckpt_file=trainer.setting.latest_ckpt_file,
                              list_GPU_ids=list_GPU_ids,
                              only_network=False)
     else:
         trainer.set_GPU_device(list_GPU_ids)
 
-    os.makedirs(trainer.setting.output_dir, exist_ok=True)
     trainer.run()
 
-    trainer.print_log_to_file('# Done !\n', 'a')
+    trainer.print_log_to_file('Done !\n', 'a')
