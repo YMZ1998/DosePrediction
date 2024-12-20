@@ -8,12 +8,9 @@ from model import Model
 from network_trainer import NetworkTrainer
 from online_evaluation import online_evaluation
 
-# if os.path.abspath('..') not in sys.path:
-#     sys.path.insert(0, os.path.abspath('..'))
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=2, help='batch size for training')
+    parser.add_argument('--batch_size', type=int, default=1, help='batch size for training')
     parser.add_argument('--list_GPU_ids', nargs='+', type=int, default=[0], help='list_GPU_ids for training')
     parser.add_argument("--epochs", default=100, type=int, metavar="N", help="number of total epochs to train")
     parser.add_argument('--resume', default=False, type=bool, help="Resume from the last checkpoint")

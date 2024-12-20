@@ -1,7 +1,11 @@
 # -*- encoding: utf-8 -*-
 from dataloader_OpenKBP_C3D import val_transform, read_data, pre_processing
-from evaluate_openKBP import *
-from model import *
+import os
+
+import numpy as np
+import torch
+
+from evaluate_openKBP import get_3D_Dose_dif
 
 
 def online_evaluation(trainer):

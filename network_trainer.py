@@ -44,9 +44,6 @@ class TrainerSetting:
         self.lr_scheduler = None
         self.lr_scheduler_type = None
 
-        # Default update learning rate after each epoch
-        # self.lr_scheduler_update_on_iter = False
-
         self.loss_function = None
 
         # If do online evaluation during validation
@@ -67,35 +64,13 @@ class TrainerLog:
         self.average_val_index = 99999999.
         self.best_average_val_index = 99999999.
 
-        # Record changes in training loss
-        self.list_average_train_loss_associate_iter = []
-        # Record changes in validation evaluation index
-        self.list_average_val_index_associate_iter = []
-        # Record changes in learning rate
-        self.list_lr_associate_iter = []
-
-        # Save status of the trainer, eg. best_train_loss, latest, best_val_evaluation_index
         self.save_status = []
-
-
-class TrainerTime:
-    def __init__(self):
-        self.train_time_per_epoch = 0.
-        # Time for loading data, eg. data precessing, data augmentation and moving tensors from cpu to gpu
-        # In fact, most of the time is spent on moving tensors from cpu to gpu, something like doing multi-processing on
-        # CUDA tensors cannot succeed in Windows,
-        # you may use cuda.Steam to accelerate it. https://github.com/NVIDIA/apex, but it needs larger GPU memory
-        self.train_loader_time_per_epoch = 0.
-
-        self.val_time_per_epoch = 0.
-        self.val_loader_time_per_epoch = 0.
 
 
 class NetworkTrainer:
     def __init__(self, project_name):
         self.log = TrainerLog()
         self.setting = TrainerSetting(project_name)
-        self.time = TrainerTime()
 
     def set_GPU_device(self, list_GPU_ids):
         self.setting.list_GPU_ids = list_GPU_ids
@@ -179,28 +154,15 @@ class NetworkTrainer:
                 (1 - self.setting.eps_train_loss) * self.log.moving_train_loss \
                 + self.setting.eps_train_loss * loss.item()
 
-    def update_average_statistics(self, loss, phase='train'):
-        # if phase == 'train':
-        #     self.log.average_train_loss = loss
-        #     if loss < self.log.best_average_train_loss:
-        #         self.log.best_average_train_loss = loss
-        #         self.log.save_status.append('best_train_loss')
-        #     self.log.list_average_train_loss_associate_iter.append([self.log.average_train_loss, self.log.iter])
-
-        if phase == 'val':
-            self.log.average_val_index = loss
-            if loss < self.log.best_average_val_index:
-                self.log.best_average_val_index = loss
-                self.log.save_status.append('best')
-            self.log.list_average_val_index_associate_iter.append([self.log.average_val_index, self.log.iter])
+    def update_average_statistics(self, loss):
+        self.log.average_val_index = loss
+        if loss < self.log.best_average_val_index:
+            self.log.best_average_val_index = loss
+            self.log.save_status.append('best')
 
     def forward(self, input_, phase):
-        time_start_load_data = time.time()
         # To device
         input_ = input_.to(self.setting.device)
-
-        # Record time of moving input from cpu to gpu
-        self.time.train_loader_time_per_epoch += time.time() - time_start_load_data
 
         # Forward
         if phase == 'train':
@@ -210,12 +172,8 @@ class NetworkTrainer:
         return output
 
     def backward(self, output, target):
-        time_start_load_data = time.time()
         for target_i in range(len(target)):
             target[target_i] = target[target_i].to(self.setting.device)
-
-        # Record time of moving target from cpu to gpu
-        self.time.train_loader_time_per_epoch += time.time() - time_start_load_data
 
         # Optimize
         loss = self.setting.loss_function(output, target)
@@ -225,13 +183,9 @@ class NetworkTrainer:
         return loss
 
     def train_one_epoch(self):
-        time_start_train = time.time()
-
         self.setting.network.train()
         train_losses = []
-        count_iter = 0
 
-        time_start_load_data = time.time()
         data_loader_train = tqdm(self.setting.train_loader, file=sys.stdout)
         for list_loader_output in data_loader_train:
             if (self.setting.max_iter is not None) and (self.log.iter >= self.setting.max_iter - 1):
@@ -242,40 +196,16 @@ class NetworkTrainer:
             input_ = list_loader_output[0]
             target = list_loader_output[1:]
 
-            # Record time of preparing data
-            self.time.train_loader_time_per_epoch += time.time() - time_start_load_data
-
-            # Forward
             output = self.forward(input_, phase='train')
-
-            # Backward
             loss = self.backward(output, target)
 
-            # Used for counting average loss of this epoch
             train_losses.append(loss.item())
-            # print(loss.item())
-            count_iter += 1
 
-            self.update_moving_train_loss(loss)
-            # self.update_lr()
-
-            # Print loss during the first epoch
-            # if self.log.epoch == 0:
-            #     if self.log.iter % 10 == 0:
-            #         self.print_log_to_file('Iter %12d       %12.5f' %(self.log.iter, self.log.moving_train_loss))
-
-            time_start_load_data = time.time()
             data_loader_train.desc = f"[train epoch {self.log.epoch}] loss: {np.mean(train_losses):.4f} "
 
         self.update_lr()
 
-        self.update_average_statistics(np.mean(train_losses), phase='train')
-
-        self.print_log_to_file('Epoch %d, loss %.5f' % (self.log.epoch, self.log.moving_train_loss))
-        self.time.train_time_per_epoch = time.time() - time_start_train
-
     def val(self):
-        time_start_val = time.time()
         self.setting.network.eval()
 
         if self.setting.online_evaluation_function_val is None:
@@ -283,9 +213,7 @@ class NetworkTrainer:
             raise Exception('No online evaluation method specified !')
         else:
             val_index = self.setting.online_evaluation_function_val(self)
-            self.update_average_statistics(val_index, phase='val')
-
-        self.time.val_time_per_epoch = time.time() - time_start_val
+            self.update_average_statistics(val_index)
 
     def run(self):
         if self.log.iter == 0:
@@ -302,21 +230,12 @@ class NetworkTrainer:
             self.print_log_to_file('Lr is %.6f, %.6f' % (
                 self.setting.optimizer.param_groups[0]['lr'], self.setting.optimizer.param_groups[-1]['lr']))
 
-            self.log.list_lr_associate_iter.append([self.setting.optimizer.param_groups[0]['lr'], self.log.iter])
             self.log.save_status = []
 
-            self.time.__init__()
             self.train_one_epoch()
             if self.log.epoch % 3 == 0:
                 self.val()
 
-            # If update learning rate per epoch
-            # if not self.setting.lr_scheduler_update_on_iter:
-            #     self.update_lr()
-
-            # Save trainer every "self.setting.save_per_epoch"
-            # if (self.log.epoch + 1) % self.setting.save_per_epoch == 0:
-            #     self.log.save_status.append('iter_' + str(self.log.iter))
             self.log.save_status.append('latest')
 
             # Try save trainer
@@ -327,18 +246,9 @@ class NetworkTrainer:
                     self.save_trainer(status=status)
                 self.log.save_status = []
 
-            self.print_log_to_file('Average train loss is %.5f, best is %.5f' %
-                                   (self.log.average_train_loss, self.log.best_average_train_loss))
             self.print_log_to_file('Average val evaluation index is %.5f, best is %.5f'
                                    % (self.log.average_val_index, self.log.best_average_val_index))
-
-            # self.print_log_to_file('Train use time %.2f' % (self.time.train_time_per_epoch))
-            # self.print_log_to_file('Train loader use time %.2f' % (self.time.train_loader_time_per_epoch))
-            # self.print_log_to_file('Val use time %.2f ' % (self.time.val_time_per_epoch))
             self.print_log_to_file('Total use time %.2f ' % (time.time() - time_start_this_epoch))
-            # self.print_log_to_file('End lr is %.5f, %.5f' % (
-            #     self.setting.optimizer.param_groups[0]['lr'], self.setting.optimizer.param_groups[-1]['lr']))
-            # self.print_log_to_file(time.strftime('time: %H:%M:%S', time.localtime(time.time())))
             self.print_log_to_file('-' * 30)
 
         self.print_log_to_file('==> End')
