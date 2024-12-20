@@ -68,7 +68,7 @@ def parse_args():
     # parser.add_argument("--image_size", default=128, type=int)
     # parser.add_argument('--learning_rate', type=float, default=3e-4, help="Learning rate")
     parser.add_argument('--batch_size', type=int, default=1, help='batch size for training')
-    parser.add_argument("--epochs", default=400, type=int, metavar="N", help="number of total epochs to train")
+    parser.add_argument("--epochs", default=300, type=int, metavar="N", help="number of total epochs to train")
     parser.add_argument('--resume', default=False, type=bool, help="Resume from the last checkpoint")
     parser.add_argument('--TTA', type=bool, default=False, help='do test-time augmentation, default True')
 

@@ -126,8 +126,6 @@ class NetworkTrainer:
             self.setting.lr_scheduler.step(self.log.moving_train_loss)
         else:
             self.setting.lr_scheduler.step()
-        # lr = self.setting.optimizer.param_groups[0]["lr"]
-        # print('Learning rate: %.7f' % lr)
 
     def update_moving_train_loss(self, loss):
         if self.log.moving_train_loss is None:
@@ -206,9 +204,8 @@ class NetworkTrainer:
             self.print_log_to_file('-' * 30)
             time_start_this_epoch = time.time()
             self.log.epoch += 1
-            self.print_log_to_file('Epoch {}/{}'.format(self.log.epoch, self.setting.max_epoch))
-            self.print_log_to_file('Lr is %.6f, %.6f' % (
-                self.setting.optimizer.param_groups[0]['lr'], self.setting.optimizer.param_groups[-1]['lr']))
+            self.print_log_to_file('Epoch {}/{} lr {:.6f}'.format(self.log.epoch, self.setting.max_epoch,
+                                                                  self.setting.optimizer.param_groups[0]['lr']))
 
             self.log.save_status = []
 
@@ -242,11 +239,7 @@ class NetworkTrainer:
         print(txt)
 
     def save_trainer(self, status='latest'):
-        if len(self.setting.list_GPU_ids) > 1:
-            network_state_dict = self.setting.network.module.state_dict()
-        else:
-            network_state_dict = self.setting.network.state_dict()
-
+        network_state_dict = self.setting.network.state_dict()
         optimizer_state_dict = self.setting.optimizer.state_dict()
         lr_scheduler_state_dict = self.setting.lr_scheduler.state_dict()
 
