@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from dataloader_OpenKBP_DCNN import read_data, pre_processing
 from evaluate_openKBP import get_Dose_score_and_DVH_score
-from model import Model
+from parse_args import get_model, parse_args
 from network_trainer import NetworkTrainer
 from utils import copy_image_info
 
@@ -93,19 +93,14 @@ if __name__ == "__main__":
     if not os.path.exists('../Data/OpenKBP_C3D'):
         raise Exception('OpenKBP_C3D should be prepared before testing, please run prepare_OpenKBP_C3D.py')
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--TTA', type=bool, default=False, help='do test-time augmentation, default True')
-    parser.add_argument('--GPU_id', type=int, default=0, help='GPU_id for testing (default: 0)')
-    args = parser.parse_args()
-
+    args = parse_args()
     trainer = NetworkTrainer('DCNN')
 
-    trainer.setting.network = Model(in_ch=4, out_ch=1,
-                                    list_ch=[-1, 32, 64, 128, 256])
+    trainer.setting.network = get_model(args)
 
     # Load model weights
     trainer.init_trainer(ckpt_file=trainer.setting.best_ckpt_file,
-                         list_GPU_ids=[args.GPU_id],
+                         list_GPU_ids=[args.list_GPU_ids[0]],
                          only_network=True)
 
     save_path = os.path.join(trainer.setting.output_dir, 'Prediction_' + str(args.TTA))

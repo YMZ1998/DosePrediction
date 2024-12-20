@@ -146,9 +146,9 @@ class Decoder(nn.Module):
         return [output]
 
 
-class Model(nn.Module):
+class UNet(nn.Module):
     def __init__(self, in_ch, out_ch, list_ch):
-        super(Model, self).__init__()
+        super(UNet, self).__init__()
         self.encoder = Encoder(in_ch, list_ch)
         self.decoder = Decoder(out_ch, list_ch)
 
@@ -178,6 +178,11 @@ class Model(nn.Module):
     def forward(self, x):
         out_encoder = self.encoder(x)
         out_decoder = self.decoder(out_encoder)  # is a list
-
         return out_decoder
 
+
+if __name__ == '__main__':
+    from torchsummary import summary
+
+    model = UNet(in_ch=4, out_ch=1, list_ch=[-1, 32, 64, 128, 256]).to('cuda')
+    summary(model, (4, 128, 128))

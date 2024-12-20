@@ -11,31 +11,25 @@ import torch.nn as nn
 from torch import optim
 from tqdm import tqdm
 
+from DCNN.parse_args import get_model, get_device
+
 
 class TrainerSetting:
-    def __init__(self, project_name):
-        self.project_name = project_name
-        # Path for saving model and training log
-        self.output_dir = os.path.join('../Output', project_name)
-        os.makedirs(self.output_dir, exist_ok=True)
+    def __init__(self, args):
+        self.project_name = args.project_name
 
+        # Path for saving model and training log
+        self.output_dir = os.path.join('../Output', self.project_name)
+        os.makedirs(self.output_dir, exist_ok=True)
         self.log_file = os.path.join(self.output_dir,
                                      "log_{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M")))
-        self.latest_ckpt_file = os.path.join(self.output_dir, 'latest.pkl')
-        self.best_ckpt_file = os.path.join(self.output_dir, 'best.pkl')
+        self.latest_ckpt_file = os.path.join(self.output_dir, '{}_latest_model.pth'.format(args.arch))
+        self.best_ckpt_file = os.path.join(self.output_dir, '{}_best_model.pth'.format(args.arch))
 
         # Generally only use one of them
-        self.max_iter = 99999999
-        self.max_epoch = 99999999
-
-        # Default not use this,
-        # because the models of "best_train_loss", "best_val_evaluation_index", "latest" have been saved.
-        self.save_per_epoch = 99999999
-        self.eps_train_loss = 0.01
-
-        self.network = None
-        self.device = None
-        self.list_GPU_ids = None
+        self.max_epoch = args.epochs
+        self.network = get_model(args)
+        self.device = get_device()
 
         self.train_loader = None
         self.val_loader = None
@@ -68,25 +62,9 @@ class TrainerLog:
 
 
 class NetworkTrainer:
-    def __init__(self, project_name):
+    def __init__(self, args):
         self.log = TrainerLog()
-        self.setting = TrainerSetting(project_name)
-
-    def set_GPU_device(self, list_GPU_ids):
-        self.setting.list_GPU_ids = list_GPU_ids
-        sum_device = len(list_GPU_ids)
-        # cpu only
-        if list_GPU_ids[0] == -1:
-            self.setting.device = torch.device('cpu')
-        # single GPU
-        elif sum_device == 1:
-            self.setting.device = torch.device('cuda:' + str(list_GPU_ids[0]))
-        # multi-GPU
-        else:
-            self.setting.device = torch.device('cuda:' + str(list_GPU_ids[0]))
-            self.setting.network = nn.DataParallel(self.setting.network, device_ids=list_GPU_ids)
-        self.setting.network.to(self.setting.device)
-
+        self.setting = TrainerSetting(args)
     def set_optimizer(self, optimizer_type, args):
         # Sometimes we need set different learning rates for "encoder" and "decoder" separately
         if optimizer_type == 'Adam':
@@ -188,9 +166,6 @@ class NetworkTrainer:
 
         data_loader_train = tqdm(self.setting.train_loader, file=sys.stdout)
         for list_loader_output in data_loader_train:
-            if (self.setting.max_iter is not None) and (self.log.iter >= self.setting.max_iter - 1):
-                break
-            self.log.iter += 1
 
             # List_loader_output[0] default as the input
             input_ = list_loader_output[0]
@@ -216,13 +191,14 @@ class NetworkTrainer:
             self.update_average_statistics(val_index)
 
     def run(self):
+        self.print_log_to_file('-' * 30)
         if self.log.iter == 0:
             self.print_log_to_file('Start training !', 'w')
         else:
             self.print_log_to_file('Continue training !', 'w')
         self.print_log_to_file(time.strftime('Local time: %H:%M:%S', time.localtime(time.time())))
 
-        while (self.log.epoch < self.setting.max_epoch - 1) and (self.log.iter < self.setting.max_iter - 1):
+        while (self.log.epoch < self.setting.max_epoch):
             self.print_log_to_file('-' * 30)
             time_start_this_epoch = time.time()
             self.log.epoch += 1
@@ -251,7 +227,7 @@ class NetworkTrainer:
             self.print_log_to_file('Total use time %.2f ' % (time.time() - time_start_this_epoch))
             self.print_log_to_file('-' * 30)
 
-        self.print_log_to_file('==> End')
+        self.print_log_to_file('End')
 
     def print_log_to_file(self, txt, mode='a'):
         with open(self.setting.log_file, mode) as log_:
@@ -278,11 +254,10 @@ class NetworkTrainer:
         }
 
         torch.save(ckpt, self.setting.output_dir + '/' + status + '.pkl')
-        # self.print_log_to_file('==> Saving ' + status + ' model')
 
     # Default load trainer in cpu, please reset device using the function self.set_GPU_device
-    def init_trainer(self, ckpt_file, list_GPU_ids, only_network=True):
-        print('==> Loading ' + ckpt_file + '...')
+    def init_trainer(self, ckpt_file, only_network=True):
+        print('Loading ' + ckpt_file + '...')
         ckpt = torch.load(ckpt_file, weights_only=False, map_location='cpu')
 
         self.setting.network.load_state_dict(ckpt['network_state_dict'])
@@ -291,8 +266,6 @@ class NetworkTrainer:
             self.setting.lr_scheduler.load_state_dict(ckpt['lr_scheduler_state_dict'])
             self.setting.optimizer.load_state_dict(ckpt['optimizer_state_dict'])
             self.log = ckpt['log']
-
-        self.set_GPU_device(list_GPU_ids)
 
         # If do not do so, the states of optimizer will always in cpu
         # This for Adam

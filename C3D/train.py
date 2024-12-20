@@ -49,10 +49,7 @@ if __name__ == '__main__':
 
     if args.resume:
         trainer.init_trainer(ckpt_file=trainer.setting.latest_ckpt_file,
-                             list_GPU_ids=list_GPU_ids,
                              only_network=False)
-    else:
-        trainer.set_GPU_device(list_GPU_ids)
 
     trainer.run()
 
