@@ -7,11 +7,10 @@ import time
 
 import numpy as np
 import torch
-import torch.nn as nn
 from torch import optim
 from tqdm import tqdm
 
-from DCNN.parse_args import get_model, get_device
+from parse_args import get_model, get_device
 
 
 class TrainerSetting:
@@ -65,7 +64,9 @@ class NetworkTrainer:
     def __init__(self, args):
         self.log = TrainerLog()
         self.setting = TrainerSetting(args)
+
     def set_optimizer(self, optimizer_type, args):
+        print(optimizer_type)
         # Sometimes we need set different learning rates for "encoder" and "decoder" separately
         if optimizer_type == 'Adam':
             if hasattr(self.setting.network, 'decoder') and hasattr(self.setting.network, 'encoder'):
@@ -84,6 +85,9 @@ class NetworkTrainer:
                                                     betas=(0.9, 0.999),
                                                     eps=1e-08,
                                                     amsgrad=True)
+        elif optimizer_type == 'AdamW':
+            self.setting.optimizer = optim.AdamW(self.setting.network.parameters(), lr=args['lr'],
+                                                 weight_decay=args['weight_decay'])
 
     def set_lr_scheduler(self, lr_scheduler_type, args):
         if lr_scheduler_type == 'step':
@@ -166,7 +170,6 @@ class NetworkTrainer:
 
         data_loader_train = tqdm(self.setting.train_loader, file=sys.stdout)
         for list_loader_output in data_loader_train:
-
             # List_loader_output[0] default as the input
             input_ = list_loader_output[0]
             target = list_loader_output[1:]
