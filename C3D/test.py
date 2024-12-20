@@ -9,9 +9,10 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from evaluate_openKBP import get_Dose_score_and_DVH_score
+from evaluate_openKBP import get_Dose_score_and_DVH_score, evaluate_OpenKBP
 from model import Model
 from network_trainer import NetworkTrainer
+from parse_args import parse_args, remove_and_create_dir
 from utils import copy_image_info
 
 
@@ -106,9 +107,7 @@ def test_time_augmentation(trainer, input_, TTA_mode):
 
 
 def inference(trainer, list_patient_dirs, save_path, do_TTA=True):
-    if os.path.exists(save_path):
-        shutil.rmtree(save_path)
-    os.makedirs(save_path, exist_ok=True)
+    remove_and_create_dir(save_path)
 
     with torch.no_grad():
         trainer.setting.network.eval()
@@ -145,21 +144,12 @@ if __name__ == "__main__":
     if not os.path.exists('../Data/OpenKBP_C3D'):
         raise Exception('OpenKBP_C3D should be prepared before testing, please run prepare_OpenKBP_C3D.py')
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--GPU_id', type=int, default=0, help='GPU id used for testing (default: 0)')
-    parser.add_argument('--TTA', type=bool, default=True, help='do test-time augmentation, default True')
-    args = parser.parse_args()
+    args = parse_args()
+    args.project_name = 'C3D'
 
-    trainer = NetworkTrainer('C3D')
+    trainer = NetworkTrainer(args)
 
-    trainer.setting.network = Model(in_ch=9, out_ch=1,
-                                    list_ch_A=[-1, 16, 32, 64, 128, 256],
-                                    list_ch_B=[-1, 32, 64, 128, 256, 512])
-
-    # Load model weights
-    trainer.init_trainer(ckpt_file=trainer.setting.best_ckpt_file,
-                         list_GPU_ids=[args.GPU_id],
-                         only_network=True)
+    trainer.init_trainer(ckpt_file=trainer.setting.best_ckpt_file, only_network=True)
 
     save_path = os.path.join(trainer.setting.output_dir, 'Prediction_' + str(args.TTA))
 
@@ -168,9 +158,4 @@ if __name__ == "__main__":
     list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 241)]
     inference(trainer, list_patient_dirs, save_path=save_path, do_TTA=args.TTA)
 
-    # Evaluation
-    print('Start evaluation !')
-    Dose_score, DVH_score = get_Dose_score_and_DVH_score(prediction_dir=save_path, gt_dir='../Data/OpenKBP_C3D')
-    print('TTA :', args.TTA)
-    print('Dose score is: ' + str(Dose_score))
-    print('DVH score is: ' + str(DVH_score))
+    evaluate_OpenKBP(save_path)

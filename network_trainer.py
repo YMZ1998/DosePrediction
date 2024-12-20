@@ -20,7 +20,9 @@ class TrainerSetting:
         # Path for saving model and training log
         self.output_dir = os.path.join('../Output', self.project_name)
         os.makedirs(self.output_dir, exist_ok=True)
-        self.log_file = os.path.join(self.output_dir,
+        os.makedirs(os.path.join(self.output_dir, 'log'), exist_ok=True)
+
+        self.log_file = os.path.join(self.output_dir, 'log',
                                      "log_{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M")))
         self.latest_ckpt_file = os.path.join(self.output_dir, '{}_latest_model.pth'.format(args.arch))
         self.best_ckpt_file = os.path.join(self.output_dir, '{}_best_model.pth'.format(args.arch))
@@ -66,7 +68,6 @@ class NetworkTrainer:
         self.setting = TrainerSetting(args)
 
     def set_optimizer(self, optimizer_type, args):
-        print(optimizer_type)
         # Sometimes we need set different learning rates for "encoder" and "decoder" separately
         if optimizer_type == 'Adam':
             if hasattr(self.setting.network, 'decoder') and hasattr(self.setting.network, 'encoder'):

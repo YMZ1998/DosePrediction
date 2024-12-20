@@ -10,8 +10,8 @@ import torch
 from tqdm import tqdm
 
 from dataloader_OpenKBP_DCNN import read_data, pre_processing
-from evaluate_openKBP import get_Dose_score_and_DVH_score
-from parse_args import get_model, parse_args
+from evaluate_openKBP import get_Dose_score_and_DVH_score, evaluate_OpenKBP
+from parse_args import get_model, parse_args, remove_and_create_dir
 from network_trainer import NetworkTrainer
 from utils import copy_image_info
 
@@ -43,9 +43,7 @@ def test_time_augmentation(trainer, input_, TTA_mode):
 
 
 def inference(trainer, list_patient_dirs, save_path, do_TTA=True):
-    if os.path.exists(save_path):
-        shutil.rmtree(save_path)
-    os.makedirs(save_path, exist_ok=True)
+    remove_and_create_dir(save_path)
 
     with torch.no_grad():
         trainer.setting.network.eval()
@@ -94,25 +92,17 @@ if __name__ == "__main__":
         raise Exception('OpenKBP_C3D should be prepared before testing, please run prepare_OpenKBP_C3D.py')
 
     args = parse_args()
-    trainer = NetworkTrainer('DCNN')
+    args.project_name = 'DCNN'
 
-    trainer.setting.network = get_model(args)
+    trainer = NetworkTrainer(args)
 
-    # Load model weights
-    trainer.init_trainer(ckpt_file=trainer.setting.best_ckpt_file,
-                         list_GPU_ids=[args.list_GPU_ids[0]],
-                         only_network=True)
+    trainer.init_trainer(ckpt_file=trainer.setting.best_ckpt_file, only_network=True)
 
     save_path = os.path.join(trainer.setting.output_dir, 'Prediction_' + str(args.TTA))
 
     # Start inference
     print('Start inference !')
-    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 241)]
+    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 211)]
     inference(trainer, list_patient_dirs, save_path=save_path, do_TTA=args.TTA)
 
-    # Evaluation
-    print('Start evaluation !')
-    Dose_score, DVH_score = get_Dose_score_and_DVH_score(prediction_dir=save_path, gt_dir='../Data/OpenKBP_C3D')
-    print('TTA :', args.TTA)
-    print('Dose score is: ' + str(Dose_score))
-    print('DVH score is: ' + str(DVH_score))
+    evaluate_OpenKBP(save_path)
