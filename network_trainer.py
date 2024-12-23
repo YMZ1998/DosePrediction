@@ -101,10 +101,7 @@ class NetworkTrainer:
         elif lr_scheduler_type == 'cosine':
             self.setting.lr_scheduler_type = 'cosine'
             # self.setting.lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.setting.optimizer,
-            #                                                                  T_max=args['T_max'],
-            #                                                                  eta_min=args['eta_min'],
-            #                                                                  last_epoch=args['last_epoch']
-            #                                                                  )
+            #                                                                  T_max=args['T_max'])
             lf = lambda x: ((1 + math.cos(x * math.pi / args['T_max'])) / 2) * (1 - 0.01) + 0.01
             self.setting.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.setting.optimizer, lr_lambda=lf)
         elif lr_scheduler_type == 'ReduceLROnPlateau':

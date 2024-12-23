@@ -50,7 +50,9 @@ class OutConv(nn.Sequential):
         super(OutConv, self).__init__()
         middle_channels = in_channels // 2
         self.conv = nn.Sequential(
-            nn.ConvTranspose2d(in_channels, middle_channels, 4, 2, 1, 0, bias=False),
+            # nn.ConvTranspose2d(in_channels, middle_channels, 4, 2, 1, 0, bias=False),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
+            nn.Conv2d(in_channels, middle_channels, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(middle_channels),
             activation_layer,
             nn.Conv2d(middle_channels, num_classes, kernel_size=1, stride=1, padding=0)
@@ -78,8 +80,9 @@ class UpConv(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(UpConv, self).__init__()
         self.conv = nn.Sequential(
-            nn.ConvTranspose2d(in_ch, out_ch, kernel_size=3, stride=2, padding=1, output_padding=1, bias=False),
-            # nn.ConvTranspose2d(in_ch, out_ch, kernel_size=2, stride=2, padding=0, output_padding=0, bias=False),
+            # nn.ConvTranspose2d(in_ch, out_ch, kernel_size=3, stride=2, padding=1, output_padding=1, bias=False),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
+            nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(out_ch),
             activation_layer
         )
@@ -98,7 +101,7 @@ class DecoderBlock(nn.Module):
         self.up = UpConv(middle_channels, middle_channels)
         self.conv2 = Conv(middle_channels, out_channels, kernel_size=3, dilation=1)
 
-        self.drop = ops.DropBlock2d(p=0.2, block_size=3, inplace=True)
+        # self.drop = ops.DropBlock2d(p=0.2, block_size=3, inplace=True)
 
     def forward(self, x, y):
         x = self.conv1(x)
@@ -106,7 +109,7 @@ class DecoderBlock(nn.Module):
         x = self.conv2(x)
 
         x = torch.cat([y, x], dim=1)
-        x = self.drop(x)
+        # x = self.drop(x)
         return x
 
 
@@ -116,12 +119,12 @@ class EfficientUNet(nn.Module):
         backbone = timm.create_model(model_name, pretrained=pretrain_backbone, in_chans=in_chans)
         self.stage_out_channels = [16, 24, 40, 112, 320]
 
-        stage_indices = [2, 3, 4, 6, 8]
+        stage_indices = [2, 3, 4, 6, 8][:4]
         return_layers = dict([(str(j), f"stage{i}") for i, j in enumerate(stage_indices)])
         self.backbone = IntermediateLayerGetter(backbone.as_sequential(), return_layers=return_layers)
 
-        self.up1 = DecoderBlock(self.stage_out_channels[4], self.stage_out_channels[3])
-        self.up2 = DecoderBlock(self.stage_out_channels[3] * 2, self.stage_out_channels[2])
+        # self.up1 = DecoderBlock(self.stage_out_channels[4], self.stage_out_channels[3])
+        self.up2 = DecoderBlock(self.stage_out_channels[3], self.stage_out_channels[2])
         self.up3 = DecoderBlock(self.stage_out_channels[2] * 2, self.stage_out_channels[1])
         self.up4 = DecoderBlock(self.stage_out_channels[1] * 2, self.stage_out_channels[0])
         self.outconv = OutConv(self.stage_out_channels[0] * 2, num_classes=num_classes)
@@ -135,11 +138,11 @@ class EfficientUNet(nn.Module):
         e1 = backbone_out['stage1']
         e2 = backbone_out['stage2']
         e3 = backbone_out['stage3']
-        e4 = backbone_out['stage4']
+        # e4 = backbone_out['stage4']
 
         # decoder
-        d4 = self.up1(e4, e3)
-        d3 = self.up2(d4, e2)
+        # d4 = self.up1(e4, e3)
+        d3 = self.up2(e3, e2)
         d2 = self.up3(d3, e1)
         d1 = self.up4(d2, e0)
         out = self.outconv(d1)
