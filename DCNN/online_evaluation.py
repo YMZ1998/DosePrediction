@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 import os
+import random
 
 import numpy as np
 import torch
@@ -9,7 +10,8 @@ from evaluate_openKBP import get_3D_Dose_dif
 
 
 def online_evaluation(trainer):
-    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 211)]
+    random_sample = random.sample(range(201, 241), 10)
+    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in random_sample]
 
     list_Dose_score = []
 
@@ -34,7 +36,7 @@ def online_evaluation(trainer):
                 input_ = list_images[0]
                 [input_] = val_transform([input_])
                 input_ = input_.unsqueeze(0).to(trainer.setting.device)
-                [prediction_single_slice] = trainer.setting.network(input_)
+                prediction_single_slice = trainer.setting.network(input_)
                 prediction_single_slice = np.array(prediction_single_slice.cpu().data[0, 0, :, :])
 
                 prediction_dose[slice_i, :, :] = prediction_single_slice

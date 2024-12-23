@@ -45,7 +45,7 @@ def get_model(args):
 
         elif 'efficientnet' in args.arch:
             from DCNN.efficientnet_unet import EfficientUNet
-            model = EfficientUNet(in_chans=4, num_classes=1, pretrain_backbone=False, model_name='efficientnet_b0').to(
+            model = EfficientUNet(in_chans=4, num_classes=1, pretrain_backbone=True, model_name='efficientnet_b0').to(
                 device)
             return model
     elif args.project_name == 'C3D':
@@ -64,11 +64,11 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description="Train or test the dose prediction model")
     parser.add_argument('--project_name', type=str, default='C3D', help="project name")
-    parser.add_argument('--arch', '-a', metavar='ARCH', default='unet', help='unet/efficientnet_b0')
+    parser.add_argument('--arch', '-a', metavar='ARCH', default='unet', help='unet/efficientnet_b1')
     # parser.add_argument("--image_size", default=128, type=int)
     # parser.add_argument('--learning_rate', type=float, default=3e-4, help="Learning rate")
     parser.add_argument('--batch_size', type=int, default=1, help='batch size for training')
-    parser.add_argument("--epochs", default=300, type=int, metavar="N", help="number of total epochs to train")
+    parser.add_argument("--epochs", default=200, type=int, metavar="N", help="number of total epochs to train")
     parser.add_argument('--resume', default=False, type=bool, help="Resume from the last checkpoint")
     parser.add_argument('--TTA', type=bool, default=False, help='do test-time augmentation, default True')
 

@@ -32,7 +32,7 @@ def test_time_augmentation(trainer, input_, TTA_mode):
         augmented_input = flip_2d(input_.copy(), list_flip_axes)
         augmented_input = torch.from_numpy(augmented_input.astype(np.float32))
         augmented_input = augmented_input.unsqueeze(0).to(trainer.setting.device)
-        [prediction] = trainer.setting.network(augmented_input)
+        prediction = trainer.setting.network(augmented_input)
 
         # Aug back to original order
         prediction = flip_2d(np.array(prediction.cpu().data[0, :, :, :]), list_flip_axes)
@@ -93,6 +93,8 @@ if __name__ == "__main__":
 
     args = parse_args()
     args.project_name = 'DCNN'
+    args.arch = 'efficientnet_b0'
+    args.TTA = False
 
     trainer = NetworkTrainer(args)
 
@@ -102,7 +104,8 @@ if __name__ == "__main__":
 
     # Start inference
     print('Start inference !')
-    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 211)]
+    print('Prediction will be saved to {}'.format(save_path))
+    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 241)]
     inference(trainer, list_patient_dirs, save_path=save_path, do_TTA=args.TTA)
 
     evaluate_OpenKBP(save_path)

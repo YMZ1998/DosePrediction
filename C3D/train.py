@@ -14,7 +14,7 @@ def train_c3d():
     args = parse_args()
     args.project_name = 'C3D'
     args.batch_size = 2
-    args.resume = True
+    # args.resume = True
 
     trainer = NetworkTrainer(args)
 

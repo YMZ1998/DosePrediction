@@ -143,7 +143,7 @@ class Decoder(nn.Module):
         )
 
         output = self.conv_out(out_decoder_1_1)
-        return [output]
+        return output
 
 
 class UNet(nn.Module):

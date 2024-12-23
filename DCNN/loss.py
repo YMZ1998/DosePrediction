@@ -9,7 +9,7 @@ class Loss(nn.Module):
         self.L1_loss_func = nn.L1Loss(reduction='mean')
 
     def forward(self, pred, gt):
-        pred_dose = pred[0]
+        pred_dose = pred
         gt_dose = gt[0]
         possible_dose_mask = gt[1]
         # print(torch.sum(possible_dose_mask))

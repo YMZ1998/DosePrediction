@@ -138,6 +138,7 @@ class NetworkTrainer:
     def update_average_statistics(self, loss):
         self.log.average_val_index = loss
         if loss < self.log.best_average_val_index:
+            self.print_log_to_file('best average val index: ' + str(self.log.best_average_val_index))
             self.log.best_average_val_index = loss
             self.log.save_status.append('best')
 
@@ -212,19 +213,18 @@ class NetworkTrainer:
             self.train_one_epoch()
             if self.log.epoch % 3 == 0:
                 self.val()
+                self.print_log_to_file('Average val evaluation index is %.5f, best is %.5f'
+                                       % (self.log.average_val_index, self.log.best_average_val_index))
 
             self.log.save_status.append('latest')
 
-            # Try save trainer
             if len(self.log.save_status) > 0:
                 print('Saving trainer...')
-                print(self.log.save_status)
+                # print(self.log.save_status)
                 for status in self.log.save_status:
                     self.save_trainer(status=status)
                 self.log.save_status = []
 
-            self.print_log_to_file('Average val evaluation index is %.5f, best is %.5f'
-                                   % (self.log.average_val_index, self.log.best_average_val_index))
             self.print_log_to_file('Total use time %.2f ' % (time.time() - time_start_this_epoch))
             self.print_log_to_file('-' * 30)
 
@@ -250,24 +250,33 @@ class NetworkTrainer:
             'log': self.log
         }
 
-        torch.save(ckpt, self.setting.output_dir + '/' + status + '.pkl')
+        checkpoint_files = {
+            'best': self.setting.best_ckpt_file,
+            'latest': self.setting.latest_ckpt_file
+        }
 
-    # Default load trainer in cpu, please reset device using the function self.set_GPU_device
+        if status in checkpoint_files:
+            torch.save(ckpt, checkpoint_files[status])
+
     def init_trainer(self, ckpt_file, only_network=True):
-        print('Loading ' + ckpt_file + '...')
-        ckpt = torch.load(ckpt_file, weights_only=False, map_location='cpu')
+        if os.path.exists(ckpt_file):
+            print('Loading ' + ckpt_file + '...')
+            ckpt = torch.load(ckpt_file, weights_only=False, map_location='cpu')
 
-        self.setting.network.load_state_dict(ckpt['network_state_dict'])
+            self.setting.network.load_state_dict(ckpt['network_state_dict'])
 
-        if not only_network:
-            self.setting.lr_scheduler.load_state_dict(ckpt['lr_scheduler_state_dict'])
-            self.setting.optimizer.load_state_dict(ckpt['optimizer_state_dict'])
-            self.log = ckpt['log']
+            if not only_network:
+                self.setting.lr_scheduler.load_state_dict(ckpt['lr_scheduler_state_dict'])
+                self.setting.optimizer.load_state_dict(ckpt['optimizer_state_dict'])
+                self.log = ckpt['log']
 
-        # If do not do so, the states of optimizer will always in cpu
-        # This for Adam
-        if type(self.setting.optimizer).__name__ == 'Adam':
-            for key in self.setting.optimizer.state.items():
-                key[1]['exp_avg'] = key[1]['exp_avg'].to(self.setting.device)
-                key[1]['exp_avg_sq'] = key[1]['exp_avg_sq'].to(self.setting.device)
-                key[1]['max_exp_avg_sq'] = key[1]['max_exp_avg_sq'].to(self.setting.device)
+            # If do not do so, the states of optimizer will always in cpu
+            # This for Adam
+            if type(self.setting.optimizer).__name__ == 'Adam':
+                for key in self.setting.optimizer.state.items():
+                    key[1]['exp_avg'] = key[1]['exp_avg'].to(self.setting.device)
+                    key[1]['exp_avg_sq'] = key[1]['exp_avg_sq'].to(self.setting.device)
+                    key[1]['max_exp_avg_sq'] = key[1]['max_exp_avg_sq'].to(self.setting.device)
+        else:
+            print('No such file: ' + ckpt_file)
+            print('Initialize a new network !')

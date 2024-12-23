@@ -13,7 +13,9 @@ from parse_args import parse_args
 def train_dcnn():
     args = parse_args()
     args.project_name = 'DCNN'
-    args.batch_size = 64
+    args.batch_size = 32
+    args.arch ='efficientnet_b0'
+    # args.resume = True
 
     trainer = NetworkTrainer(args)
 
@@ -23,7 +25,7 @@ def train_dcnn():
     trainer.setting.loss_function = Loss()
     trainer.setting.online_evaluation_function_val = online_evaluation
 
-    trainer.set_optimizer(optimizer_type='AdamW', args={'lr': 3e-4, 'weight_decay': 1e-2})
+    trainer.set_optimizer(optimizer_type='AdamW', args={'lr': 5e-4, 'weight_decay': 1e-2})
 
     trainer.set_lr_scheduler(lr_scheduler_type='cosine', args={'T_max': args.epochs})
     if args.resume:
