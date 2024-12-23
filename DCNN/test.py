@@ -105,6 +105,7 @@ if __name__ == "__main__":
     # Start inference
     print('Start inference !')
     print('Prediction will be saved to {}'.format(save_path))
+
     list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 241)]
     inference(trainer, list_patient_dirs, save_path=save_path, do_TTA=args.TTA)
 

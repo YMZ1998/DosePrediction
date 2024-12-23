@@ -271,12 +271,14 @@ class NetworkTrainer:
                 self.log = ckpt['log']
 
             # If do not do so, the states of optimizer will always in cpu
-            # This for Adam
             if type(self.setting.optimizer).__name__ == 'Adam':
                 for key in self.setting.optimizer.state.items():
                     key[1]['exp_avg'] = key[1]['exp_avg'].to(self.setting.device)
                     key[1]['exp_avg_sq'] = key[1]['exp_avg_sq'].to(self.setting.device)
                     key[1]['max_exp_avg_sq'] = key[1]['max_exp_avg_sq'].to(self.setting.device)
         else:
-            print('No such file: ' + ckpt_file)
-            print('Initialize a new network !')
+            if only_network:
+                raise Exception('No such file: ' + ckpt_file)
+            else:
+                print('No such file: ' + ckpt_file)
+                print('Initialize a new network !')

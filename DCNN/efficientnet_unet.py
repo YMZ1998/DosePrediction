@@ -44,14 +44,13 @@ class IntermediateLayerGetter(nn.ModuleDict):
 # activation_layer = nn.ReLU(inplace=True)
 activation_layer = nn.LeakyReLU(0.1, inplace=True)
 
+
 class OutConv(nn.Sequential):
     def __init__(self, in_channels, num_classes):
         super(OutConv, self).__init__()
         middle_channels = in_channels // 2
         self.conv = nn.Sequential(
-            # nn.ConvTranspose2d(in_channels, middle_channels, 4, 2, 1, 0, bias=False),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
-            nn.Conv2d(in_channels, middle_channels, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.ConvTranspose2d(in_channels, middle_channels, 4, 2, 1, 0, bias=False),
             nn.BatchNorm2d(middle_channels),
             activation_layer,
             nn.Conv2d(middle_channels, num_classes, kernel_size=1, stride=1, padding=0)
@@ -79,9 +78,7 @@ class UpConv(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(UpConv, self).__init__()
         self.conv = nn.Sequential(
-            # nn.ConvTranspose2d(in_ch, out_ch, kernel_size=3, stride=2, padding=1, output_padding=1, bias=False),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
-            nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.ConvTranspose2d(in_ch, out_ch, kernel_size=3, stride=2, padding=1, output_padding=1, bias=False),
             # nn.ConvTranspose2d(in_ch, out_ch, kernel_size=2, stride=2, padding=0, output_padding=0, bias=False),
             nn.BatchNorm2d(out_ch),
             activation_layer
@@ -119,11 +116,9 @@ class EfficientUNet(nn.Module):
         backbone = timm.create_model(model_name, pretrained=pretrain_backbone, in_chans=in_chans)
         self.stage_out_channels = [16, 24, 40, 112, 320]
 
-        # stage_indices = [1, 2, 3, 5, 7]
         stage_indices = [2, 3, 4, 6, 8]
         return_layers = dict([(str(j), f"stage{i}") for i, j in enumerate(stage_indices)])
         self.backbone = IntermediateLayerGetter(backbone.as_sequential(), return_layers=return_layers)
-        # self.backbone = IntermediateLayerGetter(backbone.features, return_layers=return_layers)
 
         self.up1 = DecoderBlock(self.stage_out_channels[4], self.stage_out_channels[3])
         self.up2 = DecoderBlock(self.stage_out_channels[3] * 2, self.stage_out_channels[2])
