@@ -10,8 +10,8 @@ from evaluate_openKBP import get_3D_Dose_dif
 
 
 def online_evaluation(trainer):
-    random_sample = random.sample(range(201, 241), 10)
-    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in random_sample]
+    # random_sample = random.sample(range(201, 241), 10)
+    list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 241)]
 
     list_Dose_score = []
 

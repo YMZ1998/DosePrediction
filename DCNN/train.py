@@ -14,7 +14,7 @@ def train_dcnn():
     args = parse_args()
     args.project_name = 'DCNN'
     args.batch_size = 32
-    args.arch ='efficientnet_b0'
+    args.arch = 'efficientnet_b0'
     # args.resume = True
 
     trainer = NetworkTrainer(args)
