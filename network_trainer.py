@@ -179,6 +179,7 @@ class NetworkTrainer:
             data_loader_train.desc = f"[train epoch {self.log.epoch}] loss: {np.mean(train_losses):.4f} "
 
         self.update_lr()
+        self.print_log_to_file(f"[train epoch {self.log.epoch}] loss: {np.mean(train_losses):.4f} ")
 
     def val(self):
         self.setting.network.eval()
@@ -208,7 +209,8 @@ class NetworkTrainer:
             self.log.save_status = []
 
             self.train_one_epoch()
-            if self.log.epoch > 100 and self.log.epoch % 3 == 0:
+            if (self.log.epoch <= 100 and self.log.epoch % 10 == 0) or (
+                self.log.epoch > 100 and self.log.epoch % 3 == 0):
                 self.val()
                 self.print_log_to_file('Average val evaluation index is %.5f, best is %.5f'
                                        % (self.log.average_val_index, self.log.best_average_val_index))

@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     args = parse_args()
     args.project_name = 'DCNN'
-    args.arch = 'efficientnet_b0'
+    args.arch = 'efficientnet_b1'
     args.TTA = False
 
     trainer = NetworkTrainer(args)
