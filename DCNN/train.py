@@ -13,7 +13,7 @@ from parse_args import parse_args
 def train_dcnn():
     args = parse_args()
     args.project_name = 'DCNN'
-    args.batch_size = 128
+    args.batch_size = 32
     args.arch = 'efficientnet_b1'
     # args.resume = True
 

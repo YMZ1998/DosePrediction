@@ -55,6 +55,14 @@ def read_data(patient_dir, slice_index):
     return dict_images
 
 
+def img_normalize(img):
+    min_value = np.min(img)
+    max_value = np.max(img)
+    img = (img - min_value) / (max_value - min_value + 1e-8)
+    img = img * 2 - 1
+    return img
+
+
 def pre_processing(dict_images):
     # PTVs
     PTVs = 70.0 / 70. * dict_images['PTV70'] \
@@ -88,6 +96,14 @@ def pre_processing(dict_images):
 
     # Distance image proposed in https://doi.org/10.1088/1361-6560/aba87b
     distance_image = dict_images['distance_image'] / 50.
+
+    OAR_all = img_normalize(OAR_all)
+    CT = img_normalize(CT)
+    distance_image = img_normalize(distance_image)
+    PTVs = img_normalize(PTVs)
+
+    # print(np.max(PTVs), np.max(OAR_all), np.max(CT), np.max(distance_image))
+    # print(np.min(PTVs), np.min(OAR_all), np.min(CT), np.min(distance_image))
 
     list_images = [np.concatenate((PTVs, OAR_all, CT, distance_image), axis=0),  # Input
                    dose,  # Label
@@ -172,3 +188,10 @@ def get_val_loader(batch_size=1, num_workers=8):
     val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers,
                             pin_memory=False)
     return val_loader
+
+
+if __name__ == '__main__':
+    train_loader = get_train_loader(batch_size=1, num_workers=8)
+    for i, data in enumerate(train_loader):
+        print(i, data[0].shape, data[1].shape, data[2].shape)
+        print(data[0].max(), data[0].min())

@@ -119,12 +119,12 @@ class EfficientUNet(nn.Module):
         backbone = timm.create_model(model_name, pretrained=pretrain_backbone, in_chans=in_chans)
         self.stage_out_channels = [16, 24, 40, 112, 320]
 
-        stage_indices = [2, 3, 4, 6, 8][:4]
+        stage_indices = [2, 3, 4, 6, 8][:]
         return_layers = dict([(str(j), f"stage{i}") for i, j in enumerate(stage_indices)])
         self.backbone = IntermediateLayerGetter(backbone.as_sequential(), return_layers=return_layers)
 
-        # self.up1 = DecoderBlock(self.stage_out_channels[4], self.stage_out_channels[3])
-        self.up2 = DecoderBlock(self.stage_out_channels[3], self.stage_out_channels[2])
+        self.up1 = DecoderBlock(self.stage_out_channels[4], self.stage_out_channels[3])
+        self.up2 = DecoderBlock(self.stage_out_channels[3] * 2, self.stage_out_channels[2])
         self.up3 = DecoderBlock(self.stage_out_channels[2] * 2, self.stage_out_channels[1])
         self.up4 = DecoderBlock(self.stage_out_channels[1] * 2, self.stage_out_channels[0])
         self.outconv = OutConv(self.stage_out_channels[0] * 2, num_classes=num_classes)
@@ -138,11 +138,11 @@ class EfficientUNet(nn.Module):
         e1 = backbone_out['stage1']
         e2 = backbone_out['stage2']
         e3 = backbone_out['stage3']
-        # e4 = backbone_out['stage4']
+        e4 = backbone_out['stage4']
 
         # decoder
-        # d4 = self.up1(e4, e3)
-        d3 = self.up2(e3, e2)
+        d4 = self.up1(e4, e3)
+        d3 = self.up2(d4, e2)
         d2 = self.up3(d3, e1)
         d1 = self.up4(d2, e0)
         out = self.outconv(d1)
