@@ -50,9 +50,9 @@ class OutConv(nn.Sequential):
         super(OutConv, self).__init__()
         middle_channels = in_channels // 2
         self.conv = nn.Sequential(
-            # nn.ConvTranspose2d(in_channels, middle_channels, 4, 2, 1, 0, bias=False),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
-            nn.Conv2d(in_channels, middle_channels, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.ConvTranspose2d(in_channels, middle_channels, 2, 2, 0, 0, bias=False),
+            # nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
+            # nn.Conv2d(in_channels, middle_channels, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(middle_channels),
             activation_layer,
             nn.Conv2d(middle_channels, num_classes, kernel_size=1, stride=1, padding=0)
@@ -80,9 +80,9 @@ class UpConv(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(UpConv, self).__init__()
         self.conv = nn.Sequential(
-            # nn.ConvTranspose2d(in_ch, out_ch, kernel_size=3, stride=2, padding=1, output_padding=1, bias=False),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
-            nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.ConvTranspose2d(in_ch, out_ch, kernel_size=2, stride=2, padding=0, output_padding=0, bias=False),
+            # nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
+            # nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(out_ch),
             activation_layer
         )
@@ -95,7 +95,7 @@ class DecoderBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
         # print("in_channels:", in_channels, "out_channels:", out_channels)
         super(DecoderBlock, self).__init__()
-        middle_channels = int(in_channels // 2)
+        middle_channels = int(in_channels * 2)
 
         self.conv1 = Conv(in_channels, middle_channels, kernel_size=3, dilation=1)
         self.up = UpConv(middle_channels, middle_channels)

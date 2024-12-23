@@ -146,6 +146,7 @@ if __name__ == "__main__":
 
     args = parse_args()
     args.project_name = 'C3D'
+    args.arch = 'unet'
     args.TTA = False
 
     trainer = NetworkTrainer(args)
