@@ -48,6 +48,11 @@ def get_model(args):
             model = EfficientUNet(in_chans=4, num_classes=1, pretrain_backbone=True, model_name=args.arch).to(
                 device)
             return model
+        elif args.arch == 'resunet':
+            from DCNN.resunet import ResUNet
+            model = ResUNet(in_chans=4, num_classes=1, pretrain_backbone=True).to(device)
+            return model
+
     elif args.project_name == 'C3D':
         from C3D.model import Model
         model = Model(in_ch=3, out_ch=1,

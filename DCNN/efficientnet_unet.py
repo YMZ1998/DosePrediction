@@ -117,6 +117,7 @@ class EfficientUNet(nn.Module):
     def __init__(self, in_chans=3, num_classes=1, pretrain_backbone=True, model_name=None):
         super(EfficientUNet, self).__init__()
         backbone = timm.create_model(model_name, pretrained=pretrain_backbone, in_chans=in_chans)
+        print(backbone)
         self.stage_out_channels = [16, 24, 40, 112, 320]
 
         stage_indices = [2, 3, 4, 6, 8][:]
@@ -153,12 +154,12 @@ class EfficientUNet(nn.Module):
 if __name__ == '__main__':
     from torchsummary import summary
 
-    model = EfficientUNet(in_chans=4, num_classes=1, pretrain_backbone=False, model_name='efficientnet_b0').to("cuda")
-    summary(model, (4, 128, 128))
+    # model = EfficientUNet(in_chans=4, num_classes=1, pretrain_backbone=False, model_name='efficientnet_b0').to("cuda")
+    # summary(model, (4, 128, 128))
 
     # model2 = timm.create_model('efficientnet_b0', pretrained=True, in_chans=3).to("cuda")
     # summary(model2, (3, 320, 320))
-    # import os
-    # cache_dir = torch.hub.get_dir()
-    # weights_dir = os.path.join(cache_dir, "checkpoints")
-    # print(f"预训练权重存储路径: {weights_dir}")
+    import os
+    cache_dir = torch.hub.get_dir()
+    weights_dir = os.path.join(cache_dir, "checkpoints")
+    print(f"预训练权重存储路径: {weights_dir}")

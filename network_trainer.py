@@ -83,13 +83,13 @@ class NetworkTrainer:
             else:
                 self.setting.optimizer = optim.Adam(self.setting.network.parameters(),
                                                     lr=args['lr'],
-                                                    weight_decay=1e-4,
+                                                    weight_decay=3e-5,
                                                     betas=(0.9, 0.999),
                                                     eps=1e-08,
                                                     amsgrad=True)
         elif optimizer_type == 'AdamW':
             self.setting.optimizer = optim.AdamW(self.setting.network.parameters(), lr=args['lr'],
-                                                 weight_decay=args['weight_decay'])
+                                                 weight_decay=1e-2)
 
     def set_lr_scheduler(self, lr_scheduler_type, args):
         if lr_scheduler_type == 'step':
