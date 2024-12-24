@@ -54,16 +54,17 @@ def get_model(args):
             return model
 
     elif args.project_name == 'C3D':
+        in_channel = 9
         if args.arch == 'unet':
             from C3D.model import Model
-            model = Model(in_ch=3, out_ch=1,
+            model = Model(in_ch=in_channel, out_ch=1,
                           list_ch_A=[-1, 16, 32, 64, 128, 256],
                           list_ch_B=[-1, 32, 64, 128, 256, 512]).to(device)
             return model
         elif args.arch == 'resunet':
             from C3D.resunet import RUnet_encoder, RUnet_decoder, RUNet
-            en = RUnet_encoder(3, 1, 16)
-            de = RUnet_decoder(3, 1, 16)
+            en = RUnet_encoder(in_channel, 1, 16)
+            de = RUnet_decoder(in_channel, 1, 16)
             model = RUNet(en, de).to('cuda')
             return model
         elif args.arch == 'cascade_resunet':

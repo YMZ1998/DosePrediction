@@ -14,7 +14,7 @@ def train_c3d():
     args = parse_args()
     args.project_name = 'C3D'
     args.batch_size = 2
-    args.arch = 'cascade_resunet'
+    args.arch = 'unet'
     # args.resume = True
 
     trainer = NetworkTrainer(args)

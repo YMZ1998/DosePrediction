@@ -1,7 +1,5 @@
 # -*- encoding: utf-8 -*-
-import argparse
 import os
-import shutil
 import sys
 
 import SimpleITK as sitk
@@ -9,73 +7,73 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from evaluate_openKBP import get_Dose_score_and_DVH_score, evaluate_OpenKBP
-from model import Model
+from dataloader_OpenKBP_C3D import read_data, pre_processing
+from evaluate_openKBP import evaluate_OpenKBP
 from network_trainer import NetworkTrainer
 from parse_args import parse_args, remove_and_create_dir
 from utils import copy_image_info
 
 
-def read_data(patient_dir):
-    dict_images = {}
-    list_structures = ['CT',
-                       'PTV70',
-                       'PTV63',
-                       'PTV56',
-                       'possible_dose_mask',
-                       'Brainstem',
-                       'SpinalCord',
-                       'RightParotid',
-                       'LeftParotid',
-                       'Esophagus',
-                       'Larynx',
-                       'Mandible']
-
-    for structure_name in list_structures:
-        structure_file = patient_dir + '/' + structure_name + '.nii.gz'
-
-        if structure_name == 'CT':
-            dtype = sitk.sitkInt16
-        else:
-            dtype = sitk.sitkUInt8
-
-        if os.path.exists(structure_file):
-            dict_images[structure_name] = sitk.ReadImage(structure_file, dtype)
-            dict_images[structure_name] = sitk.GetArrayFromImage(dict_images[structure_name])[np.newaxis, :, :, :]
-        else:
-            dict_images[structure_name] = np.zeros((1, 128, 128, 128), np.uint8)
-
-    return dict_images
-
-
-def pre_processing(dict_images):
-    # PTVs
-    PTVs = 70.0 / 70. * dict_images['PTV70'] \
-           + 63.0 / 70. * dict_images['PTV63'] \
-           + 56.0 / 70. * dict_images['PTV56']
-
-    # OARs
-    list_OAR_names = ['Brainstem',
-                      'SpinalCord',
-                      'RightParotid',
-                      'LeftParotid',
-                      'Esophagus',
-                      'Larynx',
-                      'Mandible'
-                      ]
-    OAR_all = np.concatenate([dict_images[OAR_name] for OAR_name in list_OAR_names], axis=0)
-
-    # CT image
-    CT = dict_images['CT']
-    CT = np.clip(CT, a_min=-1024, a_max=1500)
-    CT = CT.astype(np.float32) / 1000.
-
-    # Possible mask
-    possible_dose_mask = dict_images['possible_dose_mask']
-
-    list_images = [np.concatenate((PTVs, OAR_all, CT), axis=0),  # Input
-                   possible_dose_mask]
-    return list_images
+# def read_data(patient_dir):
+#     dict_images = {}
+#     list_structures = ['CT',
+#                        'PTV70',
+#                        'PTV63',
+#                        'PTV56',
+#                        'possible_dose_mask',
+#                        'Brainstem',
+#                        'SpinalCord',
+#                        'RightParotid',
+#                        'LeftParotid',
+#                        'Esophagus',
+#                        'Larynx',
+#                        'Mandible']
+#
+#     for structure_name in list_structures:
+#         structure_file = patient_dir + '/' + structure_name + '.nii.gz'
+#
+#         if structure_name == 'CT':
+#             dtype = sitk.sitkInt16
+#         else:
+#             dtype = sitk.sitkUInt8
+#
+#         if os.path.exists(structure_file):
+#             dict_images[structure_name] = sitk.ReadImage(structure_file, dtype)
+#             dict_images[structure_name] = sitk.GetArrayFromImage(dict_images[structure_name])[np.newaxis, :, :, :]
+#         else:
+#             dict_images[structure_name] = np.zeros((1, 128, 128, 128), np.uint8)
+#
+#     return dict_images
+#
+#
+# def pre_processing(dict_images):
+#     # PTVs
+#     PTVs = 70.0 / 70. * dict_images['PTV70'] \
+#            + 63.0 / 70. * dict_images['PTV63'] \
+#            + 56.0 / 70. * dict_images['PTV56']
+#
+#     # OARs
+#     list_OAR_names = ['Brainstem',
+#                       'SpinalCord',
+#                       'RightParotid',
+#                       'LeftParotid',
+#                       'Esophagus',
+#                       'Larynx',
+#                       'Mandible'
+#                       ]
+#     OAR_all = np.concatenate([dict_images[OAR_name] for OAR_name in list_OAR_names], axis=0)
+#
+#     # CT image
+#     CT = dict_images['CT']
+#     CT = np.clip(CT, a_min=-1024, a_max=1500)
+#     CT = CT.astype(np.float32) / 1000.
+#
+#     # Possible mask
+#     possible_dose_mask = dict_images['possible_dose_mask']
+#
+#     list_images = [np.concatenate((PTVs, OAR_all, CT), axis=0),  # Input
+#                    possible_dose_mask]
+#     return list_images
 
 
 # Input is C*Z*H*W

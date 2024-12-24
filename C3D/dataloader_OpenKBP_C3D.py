@@ -51,12 +51,15 @@ def read_data(patient_dir):
             dict_images[structure_name] = np.zeros((1, 128, 128, 128), np.uint8)
     # print(patient_dir, np.sum(dict_images['possible_dose_mask']))
     return dict_images
+
+
 def img_normalize(img):
     min_value = np.min(img)
     max_value = np.max(img)
     img = (img - min_value) / (max_value - min_value + 1e-8)
     # img = img * 2 - 1
     return img
+
 
 def pre_processing(dict_images):
     # PTVs
@@ -72,14 +75,20 @@ def pre_processing(dict_images):
                       'Esophagus',
                       'Larynx',
                       'Mandible']
-    # OAR_all1 = np.concatenate([dict_images[OAR_name] for OAR_name in list_OAR_names], axis=0)
-    # print(OAR_all1.shape,OAR_all1.max(),OAR_all1.min())
-    OAR_all = np.zeros((1, 128, 128, 128), np.uint8)
-    for OAR_i in range(7):
-        OAR = dict_images[list_OAR_names[OAR_i]]
-        OAR_all[OAR > 0] = OAR_i + 1
-    # OAR_all = np.expand_dims(OAR_all, 0)
-    # print(OAR_all.shape,OAR_all.max(),OAR_all.min)
+    OAR_all = np.concatenate([dict_images[OAR_name] for OAR_name in list_OAR_names], axis=0)
+    # oar = np.zeros_like(PTVs, np.uint8)
+    # for i in range(7):
+    #     oar += dict_images[list_OAR_names[i]]
+
+    # OAR_all = np.zeros((1, 128, 128, 128), np.uint8)
+    # for OAR_i in range(7):
+    #     OAR = dict_images[list_OAR_names[OAR_i]]
+    #     OAR_all[OAR > 0] = 1
+        # OAR_all[OAR > 0] = OAR_i + 1
+    # print(oar,OAR_all)
+    # print(PTVs.shape)
+    # print(OAR_all.shape, OAR_all.max(), OAR_all.min())
+    # print(oar.shape, oar.max(), oar.min())
 
     # CT image
     CT = dict_images['CT'].astype(np.float32)
@@ -164,3 +173,10 @@ def get_val_loader(batch_size=1, num_workers=8):
     val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers,
                             pin_memory=False)
     return val_loader
+
+
+if __name__ == '__main__':
+    train_loader = get_train_loader(batch_size=1, num_workers=8)
+    for i, data in enumerate(train_loader):
+        print(i, data[0].shape, data[1].shape, data[2].shape)
+        print(data[0].max(), data[0].min())

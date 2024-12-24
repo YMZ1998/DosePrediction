@@ -18,6 +18,7 @@ class ResUNet(nn.Module):
     """
     共9332094个可训练的参数, 九百三十万左右
     """
+
     def __init__(self, training, inchannel, stage):
         """
         :param training: 标志网络是属于训练阶段还是测试阶段
@@ -137,7 +138,6 @@ class ResUNet(nn.Module):
         self.map = nn.Conv3d(32, 1, 1)
 
     def forward(self, inputs):
-
         # if self.stage == 'stage1':
         #     print(inputs.shape,self.encoder_stage1(inputs).shape)
         #     long_range1 = self.encoder_stage1(inputs) + inputs
@@ -186,15 +186,13 @@ class ResUNet(nn.Module):
 
 # 定义最终的级连3D FCN
 class Net(nn.Module):
-    def __init__(self, training):
+    def __init__(self, training, in_channel=3):
         super().__init__()
 
         self.training = training
 
-        self.stage1 = ResUNet(training=training, inchannel=3, stage='stage1')
-        self.stage2 = ResUNet(training=training, inchannel=1+3, stage='stage2')
-
-        self.conv_out_B = nn.Conv3d(32, 1, kernel_size=1, padding=0, bias=True)
+        self.stage1 = ResUNet(training=training, inchannel=in_channel, stage='stage1')
+        self.stage2 = ResUNet(training=training, inchannel=1 + in_channel, stage='stage2')
 
     def forward(self, x):
         out_net_A = self.stage1(x)
@@ -209,6 +207,7 @@ def init(module):
         nn.init.kaiming_normal_(module.weight.data, 0.25)
         nn.init.constant_(module.bias.data, 0)
 
+
 if __name__ == '__main__':
     from torchsummary import summary
 
@@ -216,4 +215,3 @@ if __name__ == '__main__':
     model.apply(init)
 
     summary(model, (3, 128, 128, 128))
-
