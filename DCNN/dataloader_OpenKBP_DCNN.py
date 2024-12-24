@@ -105,10 +105,10 @@ def pre_processing(dict_images):
 
     # print(np.max(PTVs), np.max(OAR_all), np.max(CT), np.max(distance_image))
     # print(np.min(PTVs), np.min(OAR_all), np.min(CT), np.min(distance_image))
-    PTVs = PTVs * possible_dose_mask
-    OAR_all = OAR_all * possible_dose_mask
-    distance_image = distance_image * possible_dose_mask
-    CT = CT * possible_dose_mask
+    # PTVs = PTVs * possible_dose_mask
+    # OAR_all = OAR_all * possible_dose_mask
+    # distance_image = distance_image * possible_dose_mask
+    # CT = CT * possible_dose_mask
 
     list_images = [np.concatenate((PTVs, OAR_all, CT, distance_image), axis=0),  # Input
                    dose,  # Label

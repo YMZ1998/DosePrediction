@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 def conv_block_3d(in_dim, out_dim, activation):
@@ -43,12 +42,6 @@ class RUNet(nn.Module):
         out = self.decoder(down1, res1, down2, res2, down3, res3, down4, res4, bridge, res_bridge)
 
         return out
-
-    def model_name(self):
-        return 'ResUnet'
-
-    def model_description(self):
-        return 'Vanilla ResUnet for dose prediction.'
 
     def initialize(self):
         # print('random init encoder weight using nn.init.kaiming_uniform !')
@@ -189,12 +182,6 @@ class RUnet_decoder(nn.Module):
         # Output
         out = self.out(up_5)  # -> [1, 3, 128, 128, 128]
         return out
-
-    def model_name(self):
-        return 'ResUnet'
-
-    def model_description(self):
-        return 'Beam dose network (BDN) for dose prediction.'
 
 
 if __name__ == '__main__':

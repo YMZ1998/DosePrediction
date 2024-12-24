@@ -28,8 +28,8 @@ def online_evaluation(trainer):
             # Forward
             [input_] = val_transform([input_])
             input_ = input_.unsqueeze(0).to(trainer.setting.device)
-            # [_, prediction_B] = trainer.setting.network(input_)
-            prediction_B = trainer.setting.network(input_)
+            [_, prediction_B] = trainer.setting.network(input_)
+            # prediction_B = trainer.setting.network(input_)
             prediction_B = np.array(prediction_B.cpu().data[0, :, :, :, :])
 
             # Post processing and evaluation
