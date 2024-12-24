@@ -25,7 +25,7 @@ def train_c3d():
     trainer.setting.loss_function = Loss()
     trainer.setting.online_evaluation_function_val = online_evaluation
 
-    trainer.set_optimizer(optimizer_type='AdamW', args={'lr': 5e-4, 'weight_decay': 1e-2})
+    trainer.set_optimizer(optimizer_type='Adam', args={'lr': 3e-4})
 
     trainer.set_lr_scheduler(lr_scheduler_type='cosine', args={'T_max': args.epochs})
     if args.resume:

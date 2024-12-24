@@ -59,7 +59,7 @@ def img_normalize(img):
     min_value = np.min(img)
     max_value = np.max(img)
     img = (img - min_value) / (max_value - min_value + 1e-8)
-    img = img * 2 - 1
+    # img = img * 2 - 1
     return img
 
 
@@ -85,8 +85,9 @@ def pre_processing(dict_images):
 
     # CT image
     CT = dict_images['CT']
-    CT = np.clip(CT, a_min=-1024, a_max=1500)
-    CT = CT.astype(np.float32) / 1000.
+    CT = np.clip(CT, a_min=-1024, a_max=1500).astype(np.float32)
+    # CT = CT.astype(np.float32) / 1000.
+    CT = img_normalize(CT)
 
     # Dose
     dose = dict_images['dose'] / 70.
@@ -97,10 +98,10 @@ def pre_processing(dict_images):
     # Distance image proposed in https://doi.org/10.1088/1361-6560/aba87b
     distance_image = dict_images['distance_image'] / 50.
 
-    OAR_all = img_normalize(OAR_all)
-    CT = img_normalize(CT)
-    distance_image = img_normalize(distance_image)
-    PTVs = img_normalize(PTVs)
+    # OAR_all = img_normalize(OAR_all)
+    # CT = img_normalize(CT)
+    # distance_image = img_normalize(distance_image)
+    # PTVs = img_normalize(PTVs)
 
     # print(np.max(PTVs), np.max(OAR_all), np.max(CT), np.max(distance_image))
     # print(np.min(PTVs), np.min(OAR_all), np.min(CT), np.min(distance_image))

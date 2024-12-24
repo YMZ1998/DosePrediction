@@ -68,6 +68,7 @@ class NetworkTrainer:
         self.setting = TrainerSetting(args)
 
     def set_optimizer(self, optimizer_type, args):
+        print("Set optimizer: {}".format(optimizer_type))
         # Sometimes we need set different learning rates for "encoder" and "decoder" separately
         if optimizer_type == 'Adam':
             if hasattr(self.setting.network, 'decoder') and hasattr(self.setting.network, 'encoder'):
@@ -75,14 +76,14 @@ class NetworkTrainer:
                     {'params': self.setting.network.encoder.parameters(), 'lr': args['lr_encoder']},
                     {'params': self.setting.network.decoder.parameters(), 'lr': args['lr_decoder']}
                 ],
-                    weight_decay=args['weight_decay'],
+                    weight_decay=1e-4,
                     betas=(0.9, 0.999),
                     eps=1e-08,
                     amsgrad=True)
             else:
                 self.setting.optimizer = optim.Adam(self.setting.network.parameters(),
                                                     lr=args['lr'],
-                                                    weight_decay=3e-5,
+                                                    weight_decay=1e-4,
                                                     betas=(0.9, 0.999),
                                                     eps=1e-08,
                                                     amsgrad=True)
@@ -123,14 +124,6 @@ class NetworkTrainer:
             self.setting.lr_scheduler.step(self.log.moving_train_loss)
         else:
             self.setting.lr_scheduler.step()
-
-    def update_moving_train_loss(self, loss):
-        if self.log.moving_train_loss is None:
-            self.log.moving_train_loss = loss.item()
-        else:
-            self.log.moving_train_loss = \
-                (1 - self.setting.eps_train_loss) * self.log.moving_train_loss \
-                + self.setting.eps_train_loss * loss.item()
 
     def update_average_statistics(self, loss):
         self.log.average_val_index = loss

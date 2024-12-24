@@ -50,7 +50,7 @@ def get_model(args):
             return model
     elif args.project_name == 'C3D':
         from C3D.model import Model
-        model = Model(in_ch=9, out_ch=1,
+        model = Model(in_ch=3, out_ch=1,
                       list_ch_A=[-1, 16, 32, 64, 128, 256],
                       list_ch_B=[-1, 32, 64, 128, 256, 512]).to(device)
         return model

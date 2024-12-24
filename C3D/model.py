@@ -161,3 +161,13 @@ class Model(nn.Module):
         output_A = self.conv_out_A(out_net_A)
         output_B = self.conv_out_B(out_net_B)
         return [output_A, output_B]
+
+
+if __name__ == '__main__':
+    from torchsummary import summary
+
+    model = Model(in_ch=9, out_ch=1,
+                  list_ch_A=[-1, 16, 32, 64, 128, 256],
+                  list_ch_B=[-1, 32, 64, 128, 256, 512]).to("cuda")
+
+    summary(model, (9, 128, 128, 128))

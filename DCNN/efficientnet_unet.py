@@ -41,8 +41,8 @@ class IntermediateLayerGetter(nn.ModuleDict):
         return out
 
 
-# activation_layer = nn.ReLU(inplace=True)
-activation_layer = nn.LeakyReLU(0.1, inplace=True)
+activation_layer = nn.ReLU(inplace=True)
+# activation_layer = nn.LeakyReLU(0.1, inplace=True)
 
 
 class OutConv(nn.Sequential):
@@ -50,7 +50,7 @@ class OutConv(nn.Sequential):
         super(OutConv, self).__init__()
         middle_channels = in_channels // 2
         self.conv = nn.Sequential(
-            nn.ConvTranspose2d(in_channels, middle_channels, 2, 2, 0, 0, bias=False),
+            nn.ConvTranspose2d(in_channels, middle_channels, 2, 2, 0, 0, bias=True),
             # nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
             # nn.Conv2d(in_channels, middle_channels, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(middle_channels),
@@ -80,7 +80,7 @@ class UpConv(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(UpConv, self).__init__()
         self.conv = nn.Sequential(
-            nn.ConvTranspose2d(in_ch, out_ch, kernel_size=2, stride=2, padding=0, output_padding=0, bias=False),
+            nn.ConvTranspose2d(in_ch, out_ch, kernel_size=2, stride=2, padding=0, output_padding=0, bias=True),
             # nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
             # nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(out_ch),

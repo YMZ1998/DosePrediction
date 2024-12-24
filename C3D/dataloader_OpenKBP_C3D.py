@@ -51,7 +51,12 @@ def read_data(patient_dir):
             dict_images[structure_name] = np.zeros((1, 128, 128, 128), np.uint8)
     # print(patient_dir, np.sum(dict_images['possible_dose_mask']))
     return dict_images
-
+def img_normalize(img):
+    min_value = np.min(img)
+    max_value = np.max(img)
+    img = (img - min_value) / (max_value - min_value + 1e-8)
+    # img = img * 2 - 1
+    return img
 
 def pre_processing(dict_images):
     # PTVs
@@ -67,12 +72,20 @@ def pre_processing(dict_images):
                       'Esophagus',
                       'Larynx',
                       'Mandible']
-    OAR_all = np.concatenate([dict_images[OAR_name] for OAR_name in list_OAR_names], axis=0)
+    # OAR_all1 = np.concatenate([dict_images[OAR_name] for OAR_name in list_OAR_names], axis=0)
+    # print(OAR_all1.shape,OAR_all1.max(),OAR_all1.min())
+    OAR_all = np.zeros((1, 128, 128, 128), np.uint8)
+    for OAR_i in range(7):
+        OAR = dict_images[list_OAR_names[OAR_i]]
+        OAR_all[OAR > 0] = OAR_i + 1
+    # OAR_all = np.expand_dims(OAR_all, 0)
+    # print(OAR_all.shape,OAR_all.max(),OAR_all.min)
 
     # CT image
     CT = dict_images['CT'].astype(np.float32)
     CT = np.clip(CT, a_min=-1024, a_max=1500)
-    CT = CT.astype(np.float32) / 1000.
+    # CT = CT.astype(np.float32) / 1000.
+    CT = img_normalize(CT)
 
     # Dose image
     dose = dict_images['dose'] / 70.
