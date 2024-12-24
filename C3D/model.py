@@ -157,7 +157,7 @@ class Model(nn.Module):
     def forward(self, x):
         out_net_A = self.net_A(x)
         out_net_B = self.net_B(torch.cat((out_net_A, x), dim=1))
-
+        # print(out_net_A.shape, out_net_B.shape)
         output_A = self.conv_out_A(out_net_A)
         output_B = self.conv_out_B(out_net_B)
         return [output_A, output_B]
@@ -166,8 +166,8 @@ class Model(nn.Module):
 if __name__ == '__main__':
     from torchsummary import summary
 
-    model = Model(in_ch=9, out_ch=1,
+    model = Model(in_ch=3, out_ch=1,
                   list_ch_A=[-1, 16, 32, 64, 128, 256],
                   list_ch_B=[-1, 32, 64, 128, 256, 512]).to("cuda")
 
-    summary(model, (9, 128, 128, 128))
+    summary(model, (3, 128, 128, 128))

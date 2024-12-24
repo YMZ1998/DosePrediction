@@ -71,22 +71,12 @@ class NetworkTrainer:
         print("Set optimizer: {}".format(optimizer_type))
         # Sometimes we need set different learning rates for "encoder" and "decoder" separately
         if optimizer_type == 'Adam':
-            if hasattr(self.setting.network, 'decoder') and hasattr(self.setting.network, 'encoder'):
-                self.setting.optimizer = optim.Adam([
-                    {'params': self.setting.network.encoder.parameters(), 'lr': args['lr_encoder']},
-                    {'params': self.setting.network.decoder.parameters(), 'lr': args['lr_decoder']}
-                ],
-                    weight_decay=1e-4,
-                    betas=(0.9, 0.999),
-                    eps=1e-08,
-                    amsgrad=True)
-            else:
-                self.setting.optimizer = optim.Adam(self.setting.network.parameters(),
-                                                    lr=args['lr'],
-                                                    weight_decay=3e-5,
-                                                    betas=(0.9, 0.999),
-                                                    eps=1e-08,
-                                                    amsgrad=True)
+            self.setting.optimizer = optim.Adam(self.setting.network.parameters(),
+                                                lr=args['lr'],
+                                                weight_decay=3e-5,
+                                                betas=(0.9, 0.999),
+                                                eps=1e-08,
+                                                amsgrad=True)
         elif optimizer_type == 'AdamW':
             self.setting.optimizer = optim.AdamW(self.setting.network.parameters(), lr=args['lr'],
                                                  weight_decay=1e-2)

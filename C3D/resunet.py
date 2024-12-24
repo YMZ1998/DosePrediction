@@ -35,6 +35,8 @@ class RUNet(nn.Module):
         self.encoder = encoder
         self.decoder = decoder
 
+        self.initialize()
+
     def forward(self, x):
         # Down sampling
         down1, res1, down2, res2, down3, res3, down4, res4, bridge, res_bridge = self.encoder(x)
@@ -47,6 +49,22 @@ class RUNet(nn.Module):
 
     def model_description(self):
         return 'Vanilla ResUnet for dose prediction.'
+
+    def initialize(self):
+        # print('random init encoder weight using nn.init.kaiming_uniform !')
+        self.init_conv_IN(self.decoder.modules)
+        self.init_conv_IN(self.encoder.modules)
+
+    @staticmethod
+    def init_conv_IN(modules):
+        for m in modules():
+            if isinstance(m, nn.Conv3d):
+                nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0.)
+            elif isinstance(m, nn.InstanceNorm3d):
+                nn.init.constant_(m.weight, 1.)
+                nn.init.constant_(m.bias, 0.)
 
 
 class RUnet_encoder(nn.Module):
@@ -180,9 +198,9 @@ class RUnet_decoder(nn.Module):
 
 
 if __name__ == '__main__':
-    en = RUnet_encoder(2, 1, 16)
-    de = RUnet_decoder(2, 1, 16)
-    model = RUNet(en, de)
-    a = torch.zeros([10, 2, 32, 128, 128])
-    seg = model(a)
-    print(seg.shape)
+    from torchsummary import summary
+
+    en = RUnet_encoder(3, 1, 16)
+    de = RUnet_decoder(3, 1, 16)
+    model = RUNet(en, de).to('cuda')
+    summary(model, (3, 128, 128, 128))

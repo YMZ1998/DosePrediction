@@ -4,7 +4,7 @@ import os
 import time
 
 from dataloader_OpenKBP_C3D import get_train_loader
-from loss import Loss
+from loss import Loss, Loss2
 from network_trainer import NetworkTrainer
 from online_evaluation import online_evaluation
 from parse_args import parse_args
@@ -14,7 +14,7 @@ def train_c3d():
     args = parse_args()
     args.project_name = 'C3D'
     args.batch_size = 2
-    args.arch = 'unet'
+    args.arch = 'cascade_resunet'
     # args.resume = True
 
     trainer = NetworkTrainer(args)
