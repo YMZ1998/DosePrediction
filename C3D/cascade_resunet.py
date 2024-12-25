@@ -138,10 +138,6 @@ class ResUNet(nn.Module):
         self.map = nn.Conv3d(32, 1, 1)
 
     def forward(self, inputs):
-        # if self.stage == 'stage1':
-        #     print(inputs.shape,self.encoder_stage1(inputs).shape)
-        #     long_range1 = self.encoder_stage1(inputs) + inputs
-        # else:
         long_range1 = self.encoder_stage1(inputs)
 
         short_range1 = self.down_conv1(long_range1)
@@ -219,11 +215,10 @@ class Net(nn.Module):
                 nn.init.constant_(m.bias, 0.)
 
 
-
-
 if __name__ == '__main__':
     from torchsummary import summary
 
-    model = Net(training=True).to("cuda")
+    in_channel = 9
+    model = Net(training=True, in_channel=in_channel).to("cuda")
 
-    summary(model, (3, 128, 128, 128))
+    summary(model, (in_channel, 128, 128, 128))

@@ -69,7 +69,7 @@ def get_model(args):
             return model
         elif args.arch == 'cascade_resunet':
             from C3D.cascade_resunet import Net
-            model = Net(training=True).to("cuda")
+            model = Net(training=True, in_channel=in_channel).to("cuda")
             return model
     else:
         raise ValueError('arch error')

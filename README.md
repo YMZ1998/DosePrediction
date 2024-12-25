@@ -9,6 +9,8 @@ An essential step in radiotherapy, treatment planning aims to deliver the maxima
 
 [OpenKBP Challenge ](https://github.com/ababier/open-kbp)
 
+[OpenKBP Challenge Results](https://competitions.codalab.org/competitions/23428#results)
+
 ```
 mkdir Data
 git clone https://github.com/ababier/open-kbp.git

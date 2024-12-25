@@ -1,12 +1,12 @@
 from typing import Dict
 
-import timm
 import torch
 import torch.nn as nn
+from torchvision import models
 
 from DCNN.efficientnet_unet import OutConv, Conv, UpConv
 
-from torchvision import models, ops
+
 class ResDecoderBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(ResDecoderBlock, self).__init__()

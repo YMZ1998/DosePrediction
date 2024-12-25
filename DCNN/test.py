@@ -107,6 +107,7 @@ if __name__ == "__main__":
     print('Prediction will be saved to {}'.format(save_path))
 
     list_patient_dirs = ['../Data/OpenKBP_DCNN/pt_' + str(i) for i in range(201, 241)]
+    # list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(241, 341)]
     inference(trainer, list_patient_dirs, save_path=save_path, do_TTA=args.TTA)
 
     evaluate_OpenKBP(save_path)
