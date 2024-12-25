@@ -54,7 +54,7 @@ def get_model(args):
             return model
 
     elif args.project_name == 'C3D':
-        in_channel = 9
+        in_channel = 3
         if args.arch == 'unet':
             from C3D.model import Model
             model = Model(in_ch=in_channel, out_ch=1,

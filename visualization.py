@@ -31,7 +31,7 @@ for i in range(7):
     if os.path.exists(oar_path):
         oar_image = sitk.ReadImage(oar_path)
         oar = sitk.GetArrayFromImage(oar_image)
-        oars[oar > 0] = i + 1
+        oars[oar > 0] = 1
 
 ct_array = sitk.GetArrayFromImage(ct_image)
 dose_array = sitk.GetArrayFromImage(dose_image)

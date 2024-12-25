@@ -75,15 +75,16 @@ def pre_processing(dict_images):
                       'Esophagus',
                       'Larynx',
                       'Mandible']
-    OAR_all = np.concatenate([dict_images[OAR_name] for OAR_name in list_OAR_names], axis=0)
+
+    # OAR_all = np.concatenate([dict_images[OAR_name] for OAR_name in list_OAR_names], axis=0)
     # oar = np.zeros_like(PTVs, np.uint8)
     # for i in range(7):
     #     oar += dict_images[list_OAR_names[i]]
 
-    # OAR_all = np.zeros((1, 128, 128, 128), np.uint8)
-    # for OAR_i in range(7):
-    #     OAR = dict_images[list_OAR_names[OAR_i]]
-    #     OAR_all[OAR > 0] = 1
+    OAR_all = np.zeros((1, 128, 128, 128), np.uint8)
+    for OAR_i in range(7):
+        OAR = dict_images[list_OAR_names[OAR_i]]
+        OAR_all[OAR > 0] = 1
         # OAR_all[OAR > 0] = OAR_i + 1
     # print(oar,OAR_all)
     # print(PTVs.shape)
