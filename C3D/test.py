@@ -94,8 +94,8 @@ def test_time_augmentation(trainer, input_, TTA_mode):
         augmented_input = flip_3d(input_.copy(), list_flip_axes)
         augmented_input = torch.from_numpy(augmented_input.astype(np.float32))
         augmented_input = augmented_input.unsqueeze(0).to(trainer.setting.device)
-        [_, prediction_B] = trainer.setting.network(augmented_input)
-
+        output = trainer.setting.network(augmented_input)
+        prediction_B= output[-1]
         # Aug back to original order
         prediction_B = flip_3d(np.array(prediction_B.cpu().data[0, :, :, :, :]), list_flip_axes)
 
@@ -116,7 +116,7 @@ def inference(trainer, list_patient_dirs, save_path, do_TTA=True):
             list_images = pre_processing(dict_images)
 
             input_ = list_images[0]
-            possible_dose_mask = list_images[1]
+            possible_dose_mask = list_images[-1]
 
             # Test-time augmentation
             if do_TTA:
@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
     args = parse_args()
     args.project_name = 'C3D'
-    args.arch = 'unet'
+    args.arch = 'cascade_resunet'
     args.TTA = False
 
     trainer = NetworkTrainer(args)

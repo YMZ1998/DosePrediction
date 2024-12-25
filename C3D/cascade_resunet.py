@@ -194,24 +194,36 @@ class Net(nn.Module):
         self.stage1 = ResUNet(training=training, inchannel=in_channel, stage='stage1')
         self.stage2 = ResUNet(training=training, inchannel=1 + in_channel, stage='stage2')
 
+        self.initialize()
+
     def forward(self, x):
         out_net_A = self.stage1(x)
         out_net_B = self.stage2(torch.cat((out_net_A, x), dim=1))
 
         return [out_net_A, out_net_B]
 
+    def initialize(self):
+        # print('random init encoder weight using nn.init.kaiming_uniform !')
+        self.init_conv_IN(self.stage1.modules)
+        self.init_conv_IN(self.stage2.modules)
 
-# 网络参数初始化函数
-def init(module):
-    if isinstance(module, nn.Conv3d) or isinstance(module, nn.ConvTranspose3d):
-        nn.init.kaiming_normal_(module.weight.data, 0.25)
-        nn.init.constant_(module.bias.data, 0)
+    @staticmethod
+    def init_conv_IN(modules):
+        for m in modules():
+            if isinstance(m, nn.Conv3d):
+                nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0.)
+            elif isinstance(m, nn.InstanceNorm3d):
+                nn.init.constant_(m.weight, 1.)
+                nn.init.constant_(m.bias, 0.)
+
+
 
 
 if __name__ == '__main__':
     from torchsummary import summary
 
     model = Net(training=True).to("cuda")
-    model.apply(init)
 
     summary(model, (3, 128, 128, 128))

@@ -2,6 +2,9 @@
 
 Dose prediction.
 
+Radiotherapy is one of the primary treatment methods for esophageal cancer. 
+An essential step in radiotherapy, treatment planning aims to deliver the maximal dose to the planning target volumes (PTV) and the minimal dose to organs at risk (OARs)
+
 ## Dataset
 
 [OpenKBP Challenge ](https://github.com/ababier/open-kbp)

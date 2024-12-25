@@ -14,15 +14,17 @@ def train_c3d():
     args = parse_args()
     args.project_name = 'C3D'
     args.batch_size = 2
-    args.arch = 'unet'
+    args.arch = 'cascade_resunet'
     # args.resume = True
 
     trainer = NetworkTrainer(args)
 
     num_workers = min([os.cpu_count(), args.batch_size if args.batch_size > 1 else 0, 8])
     trainer.setting.train_loader = get_train_loader(batch_size=args.batch_size, num_workers=num_workers)
-
-    trainer.setting.loss_function = Loss()
+    if args.arch == 'resunet':
+        trainer.setting.loss_function = Loss2()
+    else:
+        trainer.setting.loss_function = Loss()
     trainer.setting.online_evaluation_function_val = online_evaluation
 
     trainer.set_optimizer(optimizer_type='Adam', args={'lr': 3e-4})

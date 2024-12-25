@@ -9,7 +9,7 @@ from evaluate_openKBP import get_3D_Dose_dif
 
 
 def online_evaluation(trainer):
-    list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 211)]
+    list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 241)]
 
     list_Dose_score = []
 
@@ -28,7 +28,8 @@ def online_evaluation(trainer):
             # Forward
             [input_] = val_transform([input_])
             input_ = input_.unsqueeze(0).to(trainer.setting.device)
-            [_, prediction_B] = trainer.setting.network(input_)
+            output = trainer.setting.network(input_)
+            prediction_B = output[-1]
             # prediction_B = trainer.setting.network(input_)
             prediction_B = np.array(prediction_B.cpu().data[0, :, :, :, :])
 
@@ -40,6 +41,5 @@ def online_evaluation(trainer):
 
             trainer.print_log_to_file('==> ' + patient_name + ': ' + str(Dose_score), 'a')
 
-
-    trainer.print_log_to_file('==> mean Dose score: '+ str(np.mean(list_Dose_score)), 'a')
+    trainer.print_log_to_file('==> mean Dose score: ' + str(np.mean(list_Dose_score)), 'a')
     return np.mean(list_Dose_score)

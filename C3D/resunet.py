@@ -181,7 +181,7 @@ class RUnet_decoder(nn.Module):
 
         # Output
         out = self.out(up_5)  # -> [1, 3, 128, 128, 128]
-        return out
+        return [out]
 
 
 if __name__ == '__main__':
