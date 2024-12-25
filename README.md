@@ -16,6 +16,10 @@ mkdir Data
 git clone https://github.com/ababier/open-kbp.git
 ```
 
+## Result
+
+![result](visualization.png)
+
 
 ## Reference
 
