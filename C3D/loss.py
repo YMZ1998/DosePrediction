@@ -26,10 +26,9 @@ class Loss2(nn.Module):
         self.l1_loss = nn.L1Loss(reduction='mean')
 
     def forward(self, predictions, targets):
-        predicted_dose = predictions[0]
         gt_dose, possible_dose_mask = targets
 
-        pred = predicted_dose[possible_dose_mask > 0]
+        pred = predictions[possible_dose_mask > 0]
         gt_dose = gt_dose[possible_dose_mask > 0]
 
         loss = self.l1_loss(pred, gt_dose)

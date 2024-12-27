@@ -13,7 +13,7 @@ def conv_trans_block_3d(in_dim, out_dim, activation):
     return nn.Sequential(
         nn.ConvTranspose3d(in_dim, out_dim, kernel_size=3, stride=2, padding=1, output_padding=1),
         nn.BatchNorm3d(out_dim),
-        activation, )
+        activation)
 
 
 def max_pooling_3d():
@@ -24,27 +24,29 @@ def conv_block_2_3d(in_dim, out_dim, activation):
     return nn.Sequential(
         conv_block_3d(in_dim, out_dim, activation),
         nn.Conv3d(out_dim, out_dim, kernel_size=3, stride=1, padding=1),
-        nn.BatchNorm3d(out_dim), )
+        nn.BatchNorm3d(out_dim))
 
 
-class RUNet(nn.Module):
-    def __init__(self, encoder, decoder):
-        super(RUNet, self).__init__()
+class ResUNet(nn.Module):
+    def __init__(self, in_channel=3, num_filters=16, is_stage1=False):
+        super(ResUNet, self).__init__()
 
-        self.encoder = encoder
-        self.decoder = decoder
+        self.encoder = RUnet_encoder(in_channel, 1, num_filters)
+        self.decoder = RUnet_decoder(in_channel, 1, num_filters)
+
+        self.is_stage1 = is_stage1
 
         self.initialize()
 
     def forward(self, x):
         # Down sampling
         down1, res1, down2, res2, down3, res3, down4, res4, bridge, res_bridge = self.encoder(x)
-        out = self.decoder(down1, res1, down2, res2, down3, res3, down4, res4, bridge, res_bridge)
-
+        up_5, out = self.decoder(down1, res1, down2, res2, down3, res3, down4, res4, bridge, res_bridge)
+        if self.is_stage1:
+            return up_5, out
         return out
 
     def initialize(self):
-        # print('random init encoder weight using nn.init.kaiming_uniform !')
         self.init_conv_IN(self.decoder.modules)
         self.init_conv_IN(self.encoder.modules)
 
@@ -68,7 +70,7 @@ class RUnet_encoder(nn.Module):
         self.out_dim = out_dim
         self.num_filters = num_filters
         activation = nn.LeakyReLU(0.2, inplace=True)
-        act1 = nn.Sigmoid()
+        # act1 = nn.Sigmoid()
 
         # Down sampling
         self.down_1 = conv_block_2_3d(self.in_dim, self.num_filters, activation)
@@ -131,8 +133,9 @@ class RUnet_decoder(nn.Module):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.num_filters = num_filters
-        activation = nn.LeakyReLU(0.2, inplace=True)
-        act1 = nn.Sigmoid()
+        # activation = nn.LeakyReLU(0.2, inplace=True)
+        activation = nn.ReLU(inplace=True)
+        # act1 = nn.Sigmoid()
 
         # Down sampling
         self.trans_2 = conv_trans_block_3d(self.num_filters * 16, self.num_filters * 16, activation)
@@ -151,7 +154,8 @@ class RUnet_decoder(nn.Module):
         self.up_5 = conv_block_2_3d(self.num_filters * 3, self.num_filters * 1, activation)
 
         # Output
-        self.out = conv_block_3d(self.num_filters, out_dim, act1)
+        # self.out = conv_block_3d(self.num_filters, out_dim, act1)
+        self.out = nn.Conv3d(self.num_filters, 1, 1)
 
     def forward(self, down_1, res_1, down_2, res_2, down_3, res_3, down_4, res_4, bridge, res_bridge):
         # Up sampling
@@ -178,16 +182,14 @@ class RUnet_decoder(nn.Module):
         trans_5 = self.trans_5(up_4 + res_up_4)  # -> [1, 8, 128, 128, 128]
         concat_5 = torch.cat([trans_5, down_1 + res_1], dim=1)  # -> [1, 12, 128, 128, 128]
         up_5 = self.up_5(concat_5)  # -> [1, 4, 128, 128, 128]
-
+        # print(up_5.shape)
         # Output
         out = self.out(up_5)  # -> [1, 3, 128, 128, 128]
-        return [out]
+        return [up_5, out]
 
 
 if __name__ == '__main__':
     from torchsummary import summary
 
-    en = RUnet_encoder(3, 1, 16)
-    de = RUnet_decoder(3, 1, 16)
-    model = RUNet(en, de).to('cuda')
+    model = ResUNet(3).to('cuda')
     summary(model, (3, 128, 128, 128))

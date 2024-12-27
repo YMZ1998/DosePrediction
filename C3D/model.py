@@ -156,6 +156,7 @@ class Model(nn.Module):
 
     def forward(self, x):
         out_net_A = self.net_A(x)
+        # print(out_net_A.shape)
         out_net_B = self.net_B(torch.cat((out_net_A, x), dim=1))
         # print(out_net_A.shape, out_net_B.shape)
         output_A = self.conv_out_A(out_net_A)

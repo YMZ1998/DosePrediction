@@ -62,14 +62,12 @@ def get_model(args):
                           list_ch_B=[-1, 32, 64, 128, 256, 512]).to(device)
             return model
         elif args.arch == 'resunet':
-            from C3D.resunet import RUnet_encoder, RUnet_decoder, RUNet
-            en = RUnet_encoder(in_channel, 1, 16)
-            de = RUnet_decoder(in_channel, 1, 16)
-            model = RUNet(en, de).to('cuda')
+            from C3D.resunet import ResUNet
+            model = ResUNet(in_channel).to('cuda')
             return model
         elif args.arch == 'cascade_resunet':
-            from C3D.cascade_resunet import Net
-            model = Net(training=True, in_channel=in_channel).to("cuda")
+            from C3D.cascade_resunet import CascadeResUNet
+            model = CascadeResUNet(in_channel=in_channel).to("cuda")
             return model
     else:
         raise ValueError('arch error')

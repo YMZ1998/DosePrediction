@@ -38,11 +38,24 @@ dose_array = sitk.GetArrayFromImage(dose_image)
 predict_dose_array = sitk.GetArrayFromImage(predict_dose)
 
 slice_idx = ct_array.shape[0] // 2
-ct_slice = ct_array[slice_idx, :, :]
-dose_slice = dose_array[slice_idx, :, :]
-predict_dose_slice = predict_dose_array[slice_idx, :, :]
-ptv_slice = ptvs[slice_idx, :, :]
-oar_slice = oars[slice_idx, :, :]
+# ct_slice = ct_array[slice_idx, :, :]
+# dose_slice = dose_array[slice_idx, :, :]
+# predict_dose_slice = predict_dose_array[slice_idx, :, :]
+# ptv_slice = ptvs[slice_idx, :, :]
+# oar_slice = oars[slice_idx, :, :]
+
+ct_slice = ct_array[:, slice_idx, :]
+dose_slice = dose_array[:, slice_idx, :]
+predict_dose_slice = predict_dose_array[:, slice_idx, :]
+ptv_slice = ptvs[:, slice_idx, :]
+oar_slice = oars[:, slice_idx, :]
+
+# ct_slice = ct_array[:, :, slice_idx]
+# dose_slice = dose_array[:, :, slice_idx]
+# predict_dose_slice = predict_dose_array[:, :, slice_idx]
+# ptv_slice = ptvs[:, :, slice_idx]
+# oar_slice = oars[:, :, slice_idx]
+
 
 ct_slice_norm = (ct_slice - np.min(ct_slice)) / (np.max(ct_slice) - np.min(ct_slice))
 # ct_slice_norm = ct_slice / np.percentile(ct_slice, 99.5)
@@ -93,7 +106,7 @@ plt.title('CT with Predicted Dose', fontsize=fontsize)
 plt.axis('off')
 
 plt.subplots_adjust(top=0.8)
-plt.savefig(f"./visualization.png", dpi=300)
+# plt.savefig(f"./visualization.png", dpi=300)
 
 plt.show()
 

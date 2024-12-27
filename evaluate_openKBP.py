@@ -1,6 +1,9 @@
+import sys
+
 import numpy as np
 import os
 import SimpleITK as sitk
+
 from tqdm import tqdm
 
 """
@@ -52,7 +55,7 @@ def get_Dose_score_and_DVH_score(prediction_dir, gt_dir):
     list_dose_dif = []
     list_DVH_dif = []
 
-    list_patient_ids = tqdm(os.listdir(prediction_dir))
+    list_patient_ids = tqdm(os.listdir(prediction_dir), file=sys.stdout)
     for patient_id in list_patient_ids:
         pred_nii = sitk.ReadImage(prediction_dir + '/' + patient_id + '/dose.nii.gz')
         pred = sitk.GetArrayFromImage(pred_nii)
@@ -114,7 +117,7 @@ if __name__ == "__main__":
 
     project_name = 'DCNN'
     save_path = os.path.join('./Output', project_name, 'Prediction_' + str(True))
-    save_path2 = os.path.join('./Output', project_name, 'Prediction_' + str(False))
+    # evaluate_OpenKBP(save_path, gt_dir)
 
-    evaluate_OpenKBP(save_path, gt_dir)
+    save_path2 = os.path.join('./Output', project_name, 'Prediction_' + str(False))
     evaluate_OpenKBP(save_path2, gt_dir)
