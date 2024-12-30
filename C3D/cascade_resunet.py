@@ -187,7 +187,7 @@ class CascadeResUNet(nn.Module):
         self.stage1 = ResUNet(in_channel=in_channel, num_filters=num_filters, is_stage1=True)
         self.stage2 = ResUNet(in_channel=num_filters + in_channel, num_filters=num_filters)
 
-        self.initialize()
+        # self.initialize()
 
     def forward(self, x):
         up, out_net_A = self.stage1(x)
@@ -196,21 +196,21 @@ class CascadeResUNet(nn.Module):
 
         return [out_net_A, out_net_B]
 
-    def initialize(self):
-        # print('random init encoder weight using nn.init.kaiming_uniform !')
-        self.init_conv_IN(self.stage1.modules)
-        self.init_conv_IN(self.stage2.modules)
-
-    @staticmethod
-    def init_conv_IN(modules):
-        for m in modules():
-            if isinstance(m, nn.Conv3d):
-                nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0.)
-            elif isinstance(m, nn.InstanceNorm3d):
-                nn.init.constant_(m.weight, 1.)
-                nn.init.constant_(m.bias, 0.)
+    # def initialize(self):
+    #     # print('random init encoder weight using nn.init.kaiming_uniform !')
+    #     self.init_conv_IN(self.stage1.modules)
+    #     self.init_conv_IN(self.stage2.modules)
+    #
+    # @staticmethod
+    # def init_conv_IN(modules):
+    #     for m in modules():
+    #         if isinstance(m, nn.Conv3d):
+    #             nn.init.kaiming_uniform_(m.weight, mode='fan_in', nonlinearity='relu')
+    #             if m.bias is not None:
+    #                 nn.init.constant_(m.bias, 0.)
+    #         elif isinstance(m, nn.InstanceNorm3d):
+    #             nn.init.constant_(m.weight, 1.)
+    #             nn.init.constant_(m.bias, 0.)
 
 
 if __name__ == '__main__':

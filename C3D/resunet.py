@@ -5,14 +5,16 @@ import torch.nn as nn
 def conv_block_3d(in_dim, out_dim, activation):
     return nn.Sequential(
         nn.Conv3d(in_dim, out_dim, kernel_size=3, stride=1, padding=1),
-        nn.BatchNorm3d(out_dim),
-        activation, )
+        # nn.BatchNorm3d(out_dim),
+        nn.InstanceNorm3d(out_dim, affine=True),
+        activation)
 
 
 def conv_trans_block_3d(in_dim, out_dim, activation):
     return nn.Sequential(
         nn.ConvTranspose3d(in_dim, out_dim, kernel_size=3, stride=2, padding=1, output_padding=1),
-        nn.BatchNorm3d(out_dim),
+        # nn.BatchNorm3d(out_dim),
+        nn.InstanceNorm3d(out_dim, affine=True),
         activation)
 
 
@@ -24,7 +26,9 @@ def conv_block_2_3d(in_dim, out_dim, activation):
     return nn.Sequential(
         conv_block_3d(in_dim, out_dim, activation),
         nn.Conv3d(out_dim, out_dim, kernel_size=3, stride=1, padding=1),
-        nn.BatchNorm3d(out_dim))
+        # nn.BatchNorm3d(out_dim)
+        nn.InstanceNorm3d(out_dim, affine=True)
+    )
 
 
 class ResUNet(nn.Module):
@@ -69,8 +73,7 @@ class RUnet_encoder(nn.Module):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.num_filters = num_filters
-        activation = nn.LeakyReLU(0.2, inplace=True)
-        # act1 = nn.Sigmoid()
+        activation = nn.ReLU(inplace=True)
 
         # Down sampling
         self.down_1 = conv_block_2_3d(self.in_dim, self.num_filters, activation)
@@ -133,9 +136,7 @@ class RUnet_decoder(nn.Module):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.num_filters = num_filters
-        # activation = nn.LeakyReLU(0.2, inplace=True)
         activation = nn.ReLU(inplace=True)
-        # act1 = nn.Sigmoid()
 
         # Down sampling
         self.trans_2 = conv_trans_block_3d(self.num_filters * 16, self.num_filters * 16, activation)
