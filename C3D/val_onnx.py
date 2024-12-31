@@ -14,6 +14,7 @@ from utils import copy_image_info
 
 def val_onnx(onnx_file_path, list_patient_dirs, save_path):
     remove_and_create_dir(save_path)
+    session = onnxruntime.InferenceSession(onnx_file_path, providers=["CPUExecutionProvider"])
 
     for patient_dir in tqdm(list_patient_dirs, file=sys.stdout):
         patient_id = patient_dir.split('/')[-1]
@@ -24,14 +25,12 @@ def val_onnx(onnx_file_path, list_patient_dirs, save_path):
         input = list_images[0]
         possible_dose_mask = list_images[-1]
 
-        session = onnxruntime.InferenceSession(onnx_file_path, providers=["CPUExecutionProvider"])
 
         input = np.expand_dims(input, 0).astype(np.float32)
-        print(np.sum(input))
-        output_name = session.get_outputs()[0].name
+        # print(np.sum(input))
         ort_inputs = {session.get_inputs()[0].name: (input)}
-        result = session.run([output_name], ort_inputs)
-        prediction = np.squeeze(result)
+        result = session.run(None, ort_inputs)
+        prediction = np.squeeze(result[-1])
 
         # Pose-processing
         prediction[np.logical_or(possible_dose_mask[0, :, :, :] < 1, prediction < 0)] = 0

@@ -140,11 +140,10 @@ def val_transform(list_images):
 
 class MyDataset(data.Dataset):
     def __init__(self, phase):
-        # 'train' or 'val
         self.phase = phase
         self.transform = {'train': train_transform, 'val': val_transform}
 
-        self.list_case_id = {'train': ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(1, 11)],
+        self.list_case_id = {'train': ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(1, 241)],
                              'val': ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 241)]}[phase]
 
         random.shuffle(self.list_case_id)
