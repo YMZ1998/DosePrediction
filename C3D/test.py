@@ -117,7 +117,7 @@ def inference(trainer, list_patient_dirs, save_path, do_TTA=True):
             list_images = pre_processing(dict_images)
 
             input = list_images[0]
-            print(np.sum(input))
+            # print(np.sum(input))
             possible_dose_mask = list_images[-1]
 
             # Test-time augmentation

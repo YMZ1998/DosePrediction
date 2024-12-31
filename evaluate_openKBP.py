@@ -115,7 +115,7 @@ def evaluate_OpenKBP(prediction_dir, gt_dir='../Data/OpenKBP_C3D'):
 if __name__ == "__main__":
     gt_dir = './Data/OpenKBP_C3D'
 
-    project_name = 'DCNN'
+    project_name = 'C3D'
     save_path = os.path.join('./Output', project_name, 'Prediction_' + str(True))
     # evaluate_OpenKBP(save_path, gt_dir)
 

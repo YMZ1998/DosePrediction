@@ -46,7 +46,7 @@ def convert_onnx(trainer):
     ort_outs = ort_session.run(None, ort_inputs)
     for i in range(len(ort_outs)):
         print(f"Output {i}: {ort_outs[i].shape}")
-    print(to_numpy(torch_out[-1])- ort_outs[0])
+    # print(to_numpy(torch_out[-1])- ort_outs[-1])
     np.testing.assert_allclose(to_numpy(torch_out[-1]), ort_outs[-1], rtol=1e-03, atol=1e-05)
     print("Exported model has been tested with ONNXRuntime, and the result looks good!")
 
