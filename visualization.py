@@ -4,9 +4,9 @@ import SimpleITK as sitk
 import matplotlib.pyplot as plt
 import numpy as np
 
-patient_id = 'pt_231'
+patient_id = 'pt_234'
 gt_path = os.path.join(r'./Data/OpenKBP_C3D/', patient_id)
-predict_path = os.path.join(r'./Output/DCNN/Prediction_True', patient_id)
+predict_path = os.path.join(r'./Output/C3D/Prediction_False', patient_id)
 
 ct_image = sitk.ReadImage(os.path.join(gt_path, 'CT.nii.gz'))
 dose_image = sitk.ReadImage(os.path.join(gt_path, 'dose.nii.gz'))
@@ -38,17 +38,17 @@ dose_array = sitk.GetArrayFromImage(dose_image)
 predict_dose_array = sitk.GetArrayFromImage(predict_dose)
 
 slice_idx = ct_array.shape[0] // 2
-# ct_slice = ct_array[slice_idx, :, :]
-# dose_slice = dose_array[slice_idx, :, :]
-# predict_dose_slice = predict_dose_array[slice_idx, :, :]
-# ptv_slice = ptvs[slice_idx, :, :]
-# oar_slice = oars[slice_idx, :, :]
+ct_slice = ct_array[slice_idx, :, :]
+dose_slice = dose_array[slice_idx, :, :]
+predict_dose_slice = predict_dose_array[slice_idx, :, :]
+ptv_slice = ptvs[slice_idx, :, :]
+oar_slice = oars[slice_idx, :, :]
 
-ct_slice = ct_array[:, slice_idx, :]
-dose_slice = dose_array[:, slice_idx, :]
-predict_dose_slice = predict_dose_array[:, slice_idx, :]
-ptv_slice = ptvs[:, slice_idx, :]
-oar_slice = oars[:, slice_idx, :]
+# ct_slice = ct_array[:, slice_idx, :]
+# dose_slice = dose_array[:, slice_idx, :]
+# predict_dose_slice = predict_dose_array[:, slice_idx, :]
+# ptv_slice = ptvs[:, slice_idx, :]
+# oar_slice = oars[:, slice_idx, :]
 
 # ct_slice = ct_array[:, :, slice_idx]
 # dose_slice = dose_array[:, :, slice_idx]
