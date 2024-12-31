@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import os
 import sys
+import time
 
 import SimpleITK as sitk
 import numpy as np
@@ -148,6 +149,7 @@ if __name__ == "__main__":
     args.TTA = False
 
     trainer = NetworkTrainer(args)
+    print(time.strftime('Local time: %H:%M:%S', time.localtime(time.time())))
 
     trainer.init_trainer(ckpt_file=trainer.setting.best_ckpt_file, only_network=True)
 
