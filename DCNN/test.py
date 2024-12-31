@@ -1,7 +1,5 @@
 # -*- encoding: utf-8 -*-
-import argparse
 import os
-import shutil
 import sys
 import time
 
@@ -11,9 +9,9 @@ import torch
 from tqdm import tqdm
 
 from dataloader_OpenKBP_DCNN import read_data, pre_processing
-from evaluate_openKBP import get_Dose_score_and_DVH_score, evaluate_OpenKBP
-from parse_args import get_model, parse_args, remove_and_create_dir
+from evaluate_openKBP import evaluate_OpenKBP
 from network_trainer import NetworkTrainer
+from parse_args import parse_args, remove_and_create_dir
 from utils import copy_image_info
 
 

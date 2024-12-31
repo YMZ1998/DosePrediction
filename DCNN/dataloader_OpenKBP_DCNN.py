@@ -8,7 +8,7 @@ import numpy as np
 import torch.utils.data as data
 from torch.utils.data import DataLoader
 
-from DataAugmentation.augmentation_OpenKBP_DCNN import \
+from augmentation_OpenKBP_DCNN import \
     random_flip_2d, random_rotate_around_z_axis, random_translate, to_tensor
 
 """

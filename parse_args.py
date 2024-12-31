@@ -80,7 +80,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train or test the dose prediction model")
     parser.add_argument('--project_name', type=str, default='C3D', help="project name")
     parser.add_argument('--arch', '-a', metavar='ARCH', default='efficientnet_b1', help='unet/efficientnet_b1')
-    # parser.add_argument("--image_size", default=128, type=int)
+    parser.add_argument("--volume_size", type=tuple, default=[128, 128, 128], help='volume size')
     # parser.add_argument('--learning_rate', type=float, default=3e-4, help="Learning rate")
     parser.add_argument('--batch_size', type=int, default=1, help='batch size for training')
     parser.add_argument("--epochs", default=200, type=int, metavar="N", help="number of total epochs to train")

@@ -4,17 +4,17 @@ import torch.nn as nn
 
 def conv_block_3d(in_dim, out_dim, activation):
     return nn.Sequential(
-        nn.Conv3d(in_dim, out_dim, kernel_size=3, stride=1, padding=1),
-        # nn.BatchNorm3d(out_dim),
-        nn.InstanceNorm3d(out_dim, affine=True),
+        nn.Conv3d(in_dim, out_dim, kernel_size=3, stride=1, padding=1, bias=False),
+        nn.BatchNorm3d(out_dim),
+        # nn.InstanceNorm3d(out_dim, affine=True),
         activation)
 
 
 def conv_trans_block_3d(in_dim, out_dim, activation):
     return nn.Sequential(
-        nn.ConvTranspose3d(in_dim, out_dim, kernel_size=3, stride=2, padding=1, output_padding=1),
-        # nn.BatchNorm3d(out_dim),
-        nn.InstanceNorm3d(out_dim, affine=True),
+        nn.ConvTranspose3d(in_dim, out_dim, kernel_size=3, stride=2, padding=1, output_padding=1, bias=False),
+        nn.BatchNorm3d(out_dim),
+        # nn.InstanceNorm3d(out_dim, affine=True),
         activation)
 
 
@@ -25,10 +25,10 @@ def max_pooling_3d():
 def conv_block_2_3d(in_dim, out_dim, activation):
     return nn.Sequential(
         conv_block_3d(in_dim, out_dim, activation),
-        nn.Conv3d(out_dim, out_dim, kernel_size=3, stride=1, padding=1),
-        # nn.BatchNorm3d(out_dim)
-        nn.InstanceNorm3d(out_dim, affine=True)
-    )
+        nn.Conv3d(out_dim, out_dim, kernel_size=3, stride=1, padding=1, bias=False),
+        nn.BatchNorm3d(out_dim),
+        # nn.InstanceNorm3d(out_dim, affine=True),
+        activation)
 
 
 class ResUNet(nn.Module):

@@ -116,7 +116,8 @@ def inference(trainer, list_patient_dirs, save_path, do_TTA=True):
             dict_images = read_data(patient_dir)
             list_images = pre_processing(dict_images)
 
-            input_ = list_images[0]
+            input = list_images[0]
+            print(np.sum(input))
             possible_dose_mask = list_images[-1]
 
             # Test-time augmentation
@@ -124,14 +125,14 @@ def inference(trainer, list_patient_dirs, save_path, do_TTA=True):
                 TTA_mode = [[], ['Z'], ['W'], ['Z', 'W']]
             else:
                 TTA_mode = [[]]
-            prediction = test_time_augmentation(trainer, input_, TTA_mode)
+            prediction = test_time_augmentation(trainer, input, TTA_mode)
 
             # Pose-processing
             prediction[np.logical_or(possible_dose_mask[0, :, :, :] < 1, prediction < 0)] = 0
             prediction = 70. * prediction
 
             # Save prediction to nii image
-            templete_nii = sitk.ReadImage(patient_dir + '/possible_dose_mask.nii.gz')
+            templete_nii = sitk.ReadImage(patient_dir + '/CT.nii.gz')
             prediction_nii = sitk.GetImageFromArray(prediction)
             prediction_nii = copy_image_info(templete_nii, prediction_nii)
             if not os.path.exists(save_path + '/' + patient_id):
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     print('Start inference !')
     print('Prediction will be saved to {}'.format(save_path))
 
-    list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 241)]
+    list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 211)]
     # list_patient_dirs = ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(241, 341)]
     inference(trainer, list_patient_dirs, save_path=save_path, do_TTA=args.TTA)
 

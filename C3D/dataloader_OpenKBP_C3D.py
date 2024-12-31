@@ -7,7 +7,7 @@ import random
 import cv2
 from torch.utils.data import DataLoader
 
-from DataAugmentation.augmentation_OpenKBP_C3D import \
+from augmentation_OpenKBP_C3D import \
     random_flip_3d, random_rotate_around_z_axis, random_translate, to_tensor
 
 """
@@ -144,7 +144,7 @@ class MyDataset(data.Dataset):
         self.phase = phase
         self.transform = {'train': train_transform, 'val': val_transform}
 
-        self.list_case_id = {'train': ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(1, 241)],
+        self.list_case_id = {'train': ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(1, 11)],
                              'val': ['../Data/OpenKBP_C3D/pt_' + str(i) for i in range(201, 241)]}[phase]
 
         random.shuffle(self.list_case_id)

@@ -26,11 +26,14 @@ class TrainerSetting:
                                      "log_{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M")))
         self.latest_ckpt_file = os.path.join(self.output_dir, '{}_latest_model.pth'.format(args.arch))
         self.best_ckpt_file = os.path.join(self.output_dir, '{}_best_model.pth'.format(args.arch))
+        self.onnx_file = os.path.join(self.output_dir, 'model.onnx')
 
         # Generally only use one of them
         self.max_epoch = args.epochs
         self.network = get_model(args)
         self.device = get_device()
+
+        self.volume_size = args.volume_size
 
         self.train_loader = None
         self.val_loader = None
