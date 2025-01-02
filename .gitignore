@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 Installer/result
 Installer/onnx
+Installer/checkpoint
 Output/
 Data
 .Python

@@ -20,6 +20,16 @@ git clone https://github.com/ababier/open-kbp.git
 
 ![result](visualization.png)
 
+## PyInstaller Installation Guide:
+
+```bash
+pyinstaller --name DosePrediction --onefile --icon=DP_logo.ico DosePrediction.py
+```
+
+```bash
+pyinstaller --clean DosePrediction.spec
+```
+
 
 ## Reference
 
