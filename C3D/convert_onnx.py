@@ -28,7 +28,6 @@ def convert_onnx(trainer):
                       input_names=['input'],
                       output_names=['output'],
                       verbose=False)
-    # Validate the exported ONNX model
     try:
         onnx_model = onnx.load(trainer.setting.onnx_file)
         onnx.checker.check_model(onnx_model)
@@ -37,7 +36,6 @@ def convert_onnx(trainer):
         print(f"Error checking ONNX model: {e}")
         return
 
-    # Run ONNX model with ONNX Runtime
     ort_session = onnxruntime.InferenceSession(trainer.setting.onnx_file, providers=["CPUExecutionProvider"])
     # for input in ort_session.get_inputs():
     #     print(f"Input name: {input.name}, shape: {input.shape}")

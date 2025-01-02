@@ -7,6 +7,8 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+Installer/result
+Installer/onnx
 Output/
 Data
 .Python

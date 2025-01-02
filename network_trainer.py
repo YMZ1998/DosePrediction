@@ -26,7 +26,7 @@ class TrainerSetting:
                                      "log_{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M")))
         self.latest_ckpt_file = os.path.join(self.output_dir, '{}_latest_model.pth'.format(args.arch))
         self.best_ckpt_file = os.path.join(self.output_dir, '{}_best_model.pth'.format(args.arch))
-        self.onnx_file = os.path.join(self.output_dir, 'model.onnx')
+        self.onnx_file = os.path.join(self.output_dir, 'dose_prediction.onnx')
 
         # Generally only use one of them
         self.max_epoch = args.epochs

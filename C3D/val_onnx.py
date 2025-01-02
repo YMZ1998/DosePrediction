@@ -37,9 +37,9 @@ def val_onnx(onnx_file_path, list_patient_dirs, save_path):
         prediction = 70. * prediction
 
         # Save prediction to nii image
-        templete_nii = sitk.ReadImage(patient_dir + '/CT.nii.gz')
+        template_nii = sitk.ReadImage(patient_dir + '/CT.nii.gz')
         prediction_nii = sitk.GetImageFromArray(prediction)
-        prediction_nii = copy_image_info(templete_nii, prediction_nii)
+        prediction_nii = copy_image_info(template_nii, prediction_nii)
         if not os.path.exists(save_path + '/' + patient_id):
             os.mkdir(save_path + '/' + patient_id)
         sitk.WriteImage(prediction_nii, save_path + '/' + patient_id + '/dose.nii.gz')
