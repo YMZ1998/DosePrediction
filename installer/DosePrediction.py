@@ -23,10 +23,10 @@ def read_data(args):
                        'PTV63': args.ptvs63_path,
                        'PTV56': args.ptvs56_path,
                        'possible_dose_mask': args.possible_dose_mask_path,
-                       'OARs': args.oars_path,}
+                       'OARs': args.oars_path, }
 
     for structure_name in list_structures.keys():
-        structure_file= list_structures[structure_name]
+        structure_file = list_structures[structure_name]
         if structure_name == 'CT':
             dtype = sitk.sitkInt16
         else:
@@ -48,9 +48,7 @@ def img_normalize(img):
 
 
 def pre_processing(dict_images):
-    PTVs = 70.0 / 70. * dict_images['PTV70'] \
-           + 63.0 / 70. * dict_images['PTV63'] \
-           + 56.0 / 70. * dict_images['PTV56']
+    PTVs = 70.0 / 70. * dict_images['PTV70'] + 63.0 / 70. * dict_images['PTV63'] + 56.0 / 70. * dict_images['PTV56']
     OAR_all = dict_images['OARs']
 
     CT = dict_images['CT'].astype(np.float32)
@@ -58,8 +56,7 @@ def pre_processing(dict_images):
     CT = img_normalize(CT)
 
     possible_dose_mask = dict_images['possible_dose_mask']
-    list_images = [np.concatenate((PTVs, OAR_all, CT), axis=0),
-                   possible_dose_mask]
+    list_images = [np.concatenate((PTVs, OAR_all, CT), axis=0), possible_dose_mask]
     return list_images
 
 
@@ -90,23 +87,25 @@ def val_onnx(args):
     total_time = time.time() - start_time
     print("time {}s".format(total_time))
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(prog='DosePrediction.py',
+                                     description="Dose prediction script for radiotherapy planning.")
+    parser.add_argument('--onnx_file_path', type=str, default='./checkpoint/dose_prediction.onnx',
+                        help="Path to the ONNX model file (default: './checkpoint/dose_prediction.onnx')")
+    parser.add_argument('--ct_path', type=str, required=True, help="Path to the CT file.")
+    parser.add_argument('--ptvs70_path', type=str, required=True, help="Path to the PTV70 mask file.")
+    parser.add_argument('--ptvs63_path', type=str, required=True, help="Path to the PTV63 mask file.")
+    parser.add_argument('--ptvs56_path', type=str, required=True, help="Path to the PTV56 mask file.")
+    parser.add_argument('--oars_path', type=str, required=True, help="Path to the OARs mask file.")
+    parser.add_argument('--possible_dose_mask_path', type=str, required=True,
+                        help="Path to the possible dose mask file.")
+    parser.add_argument('--result_path', type=str, default='./result',
+                        help="Path to save prediction results (default: './result').")
 
-def remove_and_create_dir(path):
-    if os.path.exists(path):
-        shutil.rmtree(path)
-    os.makedirs(path, exist_ok=True)
+    return parser.parse_args()
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='DosePrediction.py', description="Dose prediction.")
-    parser.add_argument('--onnx_file_path', type=str, default='./checkpoint/dose_prediction.onnx', help="Path to onnx")
-    parser.add_argument('--ct_path', type=str, required=True, help="Path to cbct file")
-    parser.add_argument('--ptvs70_path', type=str, required=True, help="Path to mask file")
-    parser.add_argument('--ptvs63_path', type=str, required=True, help="Path to mask file")
-    parser.add_argument('--ptvs56_path', type=str, required=True, help="Path to mask file")
-    parser.add_argument('--oars_path', type=str, required=True, help="Path to mask file")
-    parser.add_argument('--possible_dose_mask_path', type=str, required=True, help="Path to mask file")
-    parser.add_argument('--result_path', type=str, default='./result', help="Path to save results")
-    args = parser.parse_args()
+if __name__ == "__main__":
+    args = parse_arguments()
     print(args)
     val_onnx(args)
