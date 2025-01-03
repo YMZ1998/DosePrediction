@@ -1,6 +1,5 @@
 import argparse
 import os
-import shutil
 import time
 
 import SimpleITK as sitk
@@ -14,6 +13,35 @@ def save_dose(array, file_path, reference=None):
     if reference is not None:
         image.CopyInformation(reference)
     sitk.WriteImage(image, file_path)
+
+
+import SimpleITK as sitk
+
+
+def resample_image(image, interpolation_method='linear'):
+    new_size = [128, 128, 128]
+    original_spacing = image.GetSpacing()
+    original_size = image.GetSize()
+
+    new_spacing = [original_spacing[i] * (original_size[i] / new_size[i]) for i in range(len(new_size))]
+
+    if interpolation_method == 'linear':
+        interpolator = sitk.sitkLinear
+    elif interpolation_method == 'nearest':
+        interpolator = sitk.sitkNearestNeighbor
+    elif interpolation_method == 'bspline':
+        interpolator = sitk.sitkBSpline
+    else:
+        raise ValueError("Unsupported interpolation method: {}".format(interpolation_method))
+
+    resampler = sitk.ResampleImageFilter()
+    resampler.SetSize(new_size)
+    resampler.SetOutputSpacing(new_spacing)
+    resampler.SetInterpolator(interpolator)
+    resampled_image = resampler.Execute(image)
+    resampled_image = sitk.GetArrayFromImage(resampled_image)
+
+    return resampled_image
 
 
 def read_data(args):
@@ -86,6 +114,7 @@ def val_onnx(args):
     save_dose(prediction, dose_path, template_nii)
     total_time = time.time() - start_time
     print("time {}s".format(total_time))
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(prog='DosePrediction.py',

@@ -4,7 +4,7 @@ import SimpleITK as sitk
 import matplotlib.pyplot as plt
 import numpy as np
 
-patient_id = 'pt_234'
+patient_id = 'pt_220'
 gt_path = os.path.join(r'./Data/OpenKBP_C3D/', patient_id)
 predict_path = os.path.join(r'./Output/C3D/Prediction_False', patient_id)
 
@@ -106,7 +106,7 @@ plt.title('CT with Predicted Dose', fontsize=fontsize)
 plt.axis('off')
 
 plt.subplots_adjust(top=0.8)
-# plt.savefig(f"./visualization.png", dpi=300)
+plt.savefig(f"./visualization.png", dpi=300)
 
 plt.show()
 
