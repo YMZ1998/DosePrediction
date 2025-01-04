@@ -1,4 +1,3 @@
-import imageio
 import matplotlib.pyplot as plt
 from PIL import Image
 
@@ -16,7 +15,7 @@ plt.savefig('DP_logo.png', transparent=False, bbox_inches='tight', pad_inches=0.
 
 png_image = Image.open('DP_logo.png')
 print(png_image.size)
-high_res_sizes = [(256, 256), (128, 128), (64, 64)]
+high_res_sizes = [(256, 256)]
 png_image.save('DP_logo.ico', format='ICO', sizes=high_res_sizes)
 
 png_image = Image.open('DP_logo.ico')
