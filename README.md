@@ -19,6 +19,7 @@ git clone https://github.com/ababier/open-kbp.git
 ## Result
 
 ![result](visualization.png)
+![result](visual_metrics.png)
 
 ## PyInstaller Installation Guide:
 

@@ -14,8 +14,8 @@ width = 0.35  # 每个条形的宽度
 fig, ax = plt.subplots(figsize=(8, 6))
 
 # 绘制改进前后的条形图
-rects1 = ax.bar(x - width/2, scores_before, width, label='Before', color='blue', alpha=0.6)
-rects2 = ax.bar(x + width/2, scores_after, width, label='After', color='red', alpha=0.6)
+rects1 = ax.bar(x - width/2, scores_before, width, label='Before', color='green', alpha=0.5)
+rects2 = ax.bar(x + width/2, scores_after, width, label='After', color='blue', alpha=0.5)
 
 # 添加一些文本标签
 ax.set_ylabel('Scores')

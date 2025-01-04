@@ -66,3 +66,4 @@ DosePrediction.exe \
 ### 说明
 - **必需参数**: 其中的 `--ct_path`、`--ptvs70_path`、`--ptvs63_path`、`--ptvs56_path`、`--oars_path` 和 `--possible_dose_mask_path` 是必需的参数，必须在运行脚本时提供。
 - **默认值**: 如果没有提供 `--onnx_file_path` 和 `--result_path` 参数，脚本会使用默认路径 `./checkpoint/dose_prediction.onnx` 和 `./result`。
+- **数据**: 所有数据都需要重采样至`128*128*128`。
