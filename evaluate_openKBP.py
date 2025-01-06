@@ -101,6 +101,52 @@ def get_Dose_score_and_DVH_score(prediction_dir, gt_dir):
     return np.mean(list_dose_dif), np.mean(list_DVH_dif)
 
 
+def compute_metrics(prediction_path, gt_dir):
+    pred_nii = sitk.ReadImage(prediction_path)
+    pred = sitk.GetArrayFromImage(pred_nii)
+
+    gt_nii = sitk.ReadImage(gt_dir + '/dose.nii.gz')
+    gt = sitk.GetArrayFromImage(gt_nii)
+
+    # Dose dif
+    possible_dose_mask_nii = sitk.ReadImage(gt_dir + '/possible_dose_mask.nii.gz')
+    possible_dose_mask = sitk.GetArrayFromImage(possible_dose_mask_nii)
+    dose_score = get_3D_Dose_dif(pred, gt, possible_dose_mask)
+
+    list_DVH_dif = []
+
+    # DVH dif
+    for structure_name in ['Brainstem',
+                           'SpinalCord',
+                           'RightParotid',
+                           'LeftParotid',
+                           'Esophagus',
+                           'Larynx',
+                           'Mandible',
+
+                           'PTV70',
+                           'PTV63',
+                           'PTV56']:
+        structure_file = gt_dir + '/' + structure_name + '.nii.gz'
+
+        # If the structure has been delineated
+        if os.path.exists(structure_file):
+            structure_nii = sitk.ReadImage(structure_file, sitk.sitkUInt8)
+            structure = sitk.GetArrayFromImage(structure_nii)
+
+            spacing = structure_nii.GetSpacing()
+            if structure_name.find('PTV') > -1:
+                mode = 'target'
+            else:
+                mode = 'OAR'
+            pred_DVH = get_DVH_metrics(pred, structure, mode=mode, spacing=spacing)
+            gt_DVH = get_DVH_metrics(gt, structure, mode=mode, spacing=spacing)
+
+            for metric in gt_DVH.keys():
+                list_DVH_dif.append(abs(gt_DVH[metric] - pred_DVH[metric]))
+    return dose_score, np.mean(list_DVH_dif)
+
+
 def evaluate_OpenKBP(prediction_dir, gt_dir='../Data/OpenKBP_C3D'):
     print('Start evaluation !')
     if not os.path.exists(prediction_dir):
